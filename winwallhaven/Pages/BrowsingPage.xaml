@@ -25,14 +25,18 @@
             </CommandBar.Content>
             <CommandBar.PrimaryCommands>
                 <AppBarButton Icon="Refresh" Label="Refresh" Command="{Binding RefreshCommand}" />
-                <AppBarSeparator />
-                <AppBarButton Icon="Previous" Label="Prev" Command="{Binding PrevPageCommand}" />
-                <AppBarButton Icon="Next" Label="Next" Command="{Binding NextPageCommand}" />
             </CommandBar.PrimaryCommands>
         </CommandBar>
 
         <Grid Grid.Row="1">
-            <GridView ItemsSource="{Binding Results}">
+            <GridView ItemsSource="{Binding Results}"
+                      IncrementalLoadingThreshold="12"
+                      IsItemClickEnabled="False">
+                <GridView.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <ItemsWrapGrid Orientation="Horizontal" MaximumRowsOrColumns="0" />
+                    </ItemsPanelTemplate>
+                </GridView.ItemsPanel>
                 <GridView.ItemTemplate>
                     <DataTemplate>
                         <StackPanel Width="220">

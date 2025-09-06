@@ -1,11 +1,9 @@
 using System;
-using System.Collections.ObjectModel;
-using System.Diagnostics;
 using System.Threading.Tasks;
 using System.Windows.Input;
 using Microsoft.Extensions.Logging;
-using winwallhaven.Core.Models;
 using winwallhaven.Core.Services;
+using winwallhaven.Services;
 
 namespace winwallhaven.ViewModels;
 
@@ -13,21 +11,25 @@ public abstract class BrowsingViewModelBase : ViewModelBase
 {
     protected readonly IWallhavenApiClient Api;
     protected readonly ILogger? Logger;
+    private int _currentPage;
 
-    private int _currentPage = 1;
-    private bool _isLoading;
+    private bool _isRefreshing;
     private int? _lastPage;
 
     protected BrowsingViewModelBase(IWallhavenApiClient api, ILogger? logger = null)
     {
         Api = api;
         Logger = logger;
-        RefreshCommand = new AsyncRelayCommand(LoadFirstPageAsync, () => !IsLoading);
-        NextPageCommand = new AsyncRelayCommand(LoadNextPageAsync, () => !IsLoading && CanLoadNextPage);
-        PrevPageCommand = new AsyncRelayCommand(LoadPrevPageAsync, () => !IsLoading && CanLoadPrevPage);
+        RefreshCommand = new AsyncRelayCommand(ResetAndReloadAsync, () => !IsRefreshing);
+        Results = new IncrementalWallpaperCollection((page, ct) => Api.SearchAsync(BuildQuery(page), ct));
+        Results.PageInfoUpdated = (cp, lp) =>
+        {
+            CurrentPage = cp;
+            LastPage = lp;
+        };
     }
 
-    public ObservableCollection<Wallpaper> Results { get; } = new();
+    public IncrementalWallpaperCollection Results { get; }
 
     public int CurrentPage
     {
@@ -49,82 +51,49 @@ public abstract class BrowsingViewModelBase : ViewModelBase
         }
     }
 
-    public bool IsLoading
+    public bool IsRefreshing
     {
-        get => _isLoading;
+        get => _isRefreshing;
         private set
         {
-            SetProperty(ref _isLoading, value);
+            SetProperty(ref _isRefreshing, value);
             RaiseCanExec();
         }
     }
 
-    public bool CanLoadNextPage => LastPage == null || CurrentPage < LastPage;
-    public bool CanLoadPrevPage => CurrentPage > 1;
-
     public ICommand RefreshCommand { get; }
-    public ICommand NextPageCommand { get; }
-    public ICommand PrevPageCommand { get; }
 
     protected abstract WallpaperSearchQuery BuildQuery(int page);
 
     public async Task LoadAsync()
     {
-        if (Results.Count == 0)
-            await LoadFirstPageAsync();
+        if (Results.Count == 0) await ResetAndReloadAsync();
     }
 
-    private Task LoadFirstPageAsync()
+    private async Task ResetAndReloadAsync()
     {
-        CurrentPage = 1;
-        return LoadPageAsync();
-    }
-
-    private Task LoadNextPageAsync()
-    {
-        if (!CanLoadNextPage) return Task.CompletedTask;
-        CurrentPage++;
-        return LoadPageAsync();
-    }
-
-    private Task LoadPrevPageAsync()
-    {
-        if (!CanLoadPrevPage) return Task.CompletedTask;
-        CurrentPage--;
-        return LoadPageAsync();
-    }
-
-    private async Task LoadPageAsync()
-    {
-        IsLoading = true;
+        IsRefreshing = true;
         try
         {
             Results.Clear();
-            var sw = Stopwatch.StartNew();
-            var query = BuildQuery(CurrentPage);
-            var result = await Api.SearchAsync(query);
-            CurrentPage = result.CurrentPage;
-            LastPage = result.LastPage;
-            foreach (var w in result.Items) Results.Add(w);
-            sw.Stop();
-            (Logger as ILogger<BrowsingViewModelBase>)?.LogInformation("Loaded {Count} results in {Ms}ms",
-                Results.Count, sw.ElapsedMilliseconds);
+            _currentPage = 0;
+            _lastPage = null;
+            // Trigger initial load by asking for one batch
+            await Results.LoadMoreItemsAsync(1).AsTask();
         }
         catch (Exception ex)
         {
-            Logger?.LogError(ex, "Failed to load page");
+            Logger?.LogError(ex, "Failed to refresh");
         }
         finally
         {
-            IsLoading = false;
+            IsRefreshing = false;
         }
     }
 
     private void RaiseCanExec()
     {
         (RefreshCommand as AsyncRelayCommand)?.RaiseCanExecuteChanged();
-        (NextPageCommand as AsyncRelayCommand)?.RaiseCanExecuteChanged();
-        (PrevPageCommand as AsyncRelayCommand)?.RaiseCanExecuteChanged();
     }
 }
 

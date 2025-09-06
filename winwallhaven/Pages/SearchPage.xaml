@@ -24,9 +24,6 @@
             </CommandBar.Content>
             <CommandBar.PrimaryCommands>
                 <AppBarButton Icon="Find" Label="Search" Command="{Binding SearchCommand}" />
-                <AppBarSeparator />
-                <AppBarButton Icon="Previous" Label="Prev" Command="{Binding PrevPageCommand}" />
-                <AppBarButton Icon="Next" Label="Next" Command="{Binding NextPageCommand}" />
             </CommandBar.PrimaryCommands>
         </CommandBar>
 
@@ -37,7 +34,13 @@
             </Grid.ColumnDefinitions>
 
             <GridView ItemsSource="{Binding Results}" SelectionMode="Single"
-                      SelectedItem="{Binding Selected, Mode=TwoWay}">
+                      SelectedItem="{Binding Selected, Mode=TwoWay}"
+                      IncrementalLoadingThreshold="12">
+                <GridView.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <ItemsWrapGrid Orientation="Horizontal" MaximumRowsOrColumns="0" />
+                    </ItemsPanelTemplate>
+                </GridView.ItemsPanel>
                 <GridView.ItemTemplate>
                     <DataTemplate>
                         <StackPanel Width="220">

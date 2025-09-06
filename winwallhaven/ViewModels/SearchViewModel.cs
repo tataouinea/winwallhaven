@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.IO;
 using System.Runtime.Versioning;
@@ -11,6 +10,7 @@ using Microsoft.UI.Xaml;
 using winwallhaven.Core.Models;
 using winwallhaven.Core.Services;
 using winwallhaven.Core.Wallpapers;
+using winwallhaven.Services;
 #if WINDOWS
 using Windows.Storage.Pickers;
 using WinRT.Interop;
@@ -23,7 +23,7 @@ public sealed class SearchViewModel : ViewModelBase
     private readonly IWallhavenApiClient _apiClient;
     private readonly ILogger<SearchViewModel>? _logger;
     private readonly IWallpaperService _wallpaperService;
-    private int _currentPage = 1;
+    private int _currentPage;
     private bool _isLoading;
     private int? _lastPage;
     private string _query = string.Empty;
@@ -35,9 +35,17 @@ public sealed class SearchViewModel : ViewModelBase
         _apiClient = apiClient;
         _logger = logger;
         _wallpaperService = wallpaperService;
-        SearchCommand = new AsyncRelayCommand(SearchFirstPageAsync, () => !IsLoading);
-        NextPageCommand = new AsyncRelayCommand(LoadNextPageAsync, () => !IsLoading && CanLoadNextPage);
-        PrevPageCommand = new AsyncRelayCommand(LoadPrevPageAsync, () => !IsLoading && CanLoadPrevPage);
+        Results = new IncrementalWallpaperCollection((page, ct) =>
+        {
+            var sorting = string.IsNullOrWhiteSpace(Query) ? "date_added" : "relevance";
+            return _apiClient.SearchAsync(new WallpaperSearchQuery(Query, "111", "100", sorting, "desc", page), ct);
+        });
+        Results.PageInfoUpdated = (cp, lp) =>
+        {
+            CurrentPage = cp;
+            LastPage = lp;
+        };
+        SearchCommand = new AsyncRelayCommand(ResetAndSearchAsync, () => !IsLoading);
         OpenInBrowserCommand = new RelayCommand<Wallpaper?>(OpenInBrowser, w => w != null);
         SetAsWallpaperCommand = new AsyncRelayCommand<Wallpaper?>(SetAsWallpaperAsync, w => w != null && !IsLoading);
 #if WINDOWS
@@ -49,7 +57,7 @@ public sealed class SearchViewModel : ViewModelBase
 #endif
     }
 
-    public ObservableCollection<Wallpaper> Results { get; } = new();
+    public IncrementalWallpaperCollection Results { get; }
 
     public bool IsLoading
     {
@@ -97,12 +105,7 @@ public sealed class SearchViewModel : ViewModelBase
         }
     }
 
-    public bool CanLoadNextPage => LastPage == null || CurrentPage < LastPage;
-    public bool CanLoadPrevPage => CurrentPage > 1;
-
     public ICommand SearchCommand { get; }
-    public ICommand NextPageCommand { get; }
-    public ICommand PrevPageCommand { get; }
     public ICommand OpenInBrowserCommand { get; }
     public ICommand SetAsWallpaperCommand { get; }
     public ICommand DownloadCommand { get; }
@@ -111,49 +114,24 @@ public sealed class SearchViewModel : ViewModelBase
 
     private async Task LoadPageAsync()
     {
+        // Not used anymore - kept only to satisfy any potential callers
+        await Task.CompletedTask;
+    }
+
+    private async Task ResetAndSearchAsync()
+    {
         IsLoading = true;
         try
         {
             Results.Clear();
-            var sw = Stopwatch.StartNew();
-            var sorting = string.IsNullOrWhiteSpace(Query) ? "date_added" : "relevance";
-            var result =
-                await _apiClient.SearchAsync(
-                    new WallpaperSearchQuery(Query, "111", "100", sorting, "desc", CurrentPage));
-            CurrentPage = result.CurrentPage;
-            LastPage = result.LastPage;
-            foreach (var w in result.Items) Results.Add(w);
-            sw.Stop();
-            _logger?.LogInformation("Loaded {Count} results in {Ms}ms", Results.Count, sw.ElapsedMilliseconds);
-        }
-        catch (Exception ex)
-        {
-            _logger?.LogError(ex, "Failed to load page");
+            _currentPage = 0;
+            _lastPage = null;
+            await Results.LoadMoreItemsAsync(1).AsTask();
         }
         finally
         {
             IsLoading = false;
         }
-    }
-
-    private Task SearchFirstPageAsync()
-    {
-        CurrentPage = 1;
-        return LoadPageAsync();
-    }
-
-    private Task LoadNextPageAsync()
-    {
-        if (!CanLoadNextPage) return Task.CompletedTask;
-        CurrentPage++;
-        return LoadPageAsync();
-    }
-
-    private Task LoadPrevPageAsync()
-    {
-        if (!CanLoadPrevPage) return Task.CompletedTask;
-        CurrentPage--;
-        return LoadPageAsync();
     }
 
     private void OpenInBrowser(Wallpaper? w)
@@ -212,8 +190,6 @@ public sealed class SearchViewModel : ViewModelBase
     private void RaiseCanExec()
     {
         (SearchCommand as AsyncRelayCommand)?.RaiseCanExecuteChanged();
-        (NextPageCommand as AsyncRelayCommand)?.RaiseCanExecuteChanged();
-        (PrevPageCommand as AsyncRelayCommand)?.RaiseCanExecuteChanged();
         (OpenInBrowserCommand as RelayCommand<Wallpaper?>)?.RaiseCanExecuteChanged();
         (SetAsWallpaperCommand as AsyncRelayCommand<Wallpaper?>)?.RaiseCanExecuteChanged();
         (DownloadCommand as AsyncRelayCommand<Wallpaper?>)?.RaiseCanExecuteChanged();
