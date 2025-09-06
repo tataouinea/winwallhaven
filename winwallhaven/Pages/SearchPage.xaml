@@ -67,11 +67,15 @@
 
         <!-- Full Screen Preview Overlay -->
         <Grid x:Name="FullScreenOverlay" Visibility="Collapsed" Background="Black" Grid.RowSpan="2">
-            <ScrollViewer ZoomMode="Enabled" HorizontalScrollMode="Auto" VerticalScrollMode="Auto"
+            <ScrollViewer x:Name="ImageScrollViewer" ZoomMode="Enabled"
+                          HorizontalScrollMode="Auto" VerticalScrollMode="Auto"
                           HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto"
-                          MinZoomFactor="0.1" MaxZoomFactor="10">
-                <Image x:Name="FullScreenImage" Stretch="Uniform" HorizontalAlignment="Center"
-                       VerticalAlignment="Center" />
+                          MinZoomFactor="0.1" MaxZoomFactor="10"
+                          HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+                          SizeChanged="ImageScrollViewer_SizeChanged">
+                <Image x:Name="FullScreenImage" Stretch="Uniform"
+                       HorizontalAlignment="Center" VerticalAlignment="Center"
+                       ImageOpened="FullScreenImage_ImageOpened" />
             </ScrollViewer>
 
             <!-- Close Button -->

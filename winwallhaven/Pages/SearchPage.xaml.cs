@@ -65,4 +65,73 @@ public sealed partial class SearchPage : Page
         // Clear the image source to free memory
         FullScreenImage.Source = null;
     }
+
+    private void ResetImageZoom()
+    {
+        // Reset zoom factor to 1.0 to ensure proper fitting
+        DispatcherQueue.TryEnqueue(() =>
+        {
+            try
+            {
+                ImageScrollViewer?.ZoomToFactor(1.0f);
+            }
+            catch
+            {
+                // Ignore any exceptions during zoom reset
+            }
+        });
+    }
+
+    private void FullScreenImage_ImageOpened(object sender, RoutedEventArgs e)
+    {
+        // When image loads, fit it to the available space
+        FitImageToViewport();
+    }
+
+    private void ImageScrollViewer_SizeChanged(object sender, SizeChangedEventArgs e)
+    {
+        // When the container size changes, refit the image
+        if (FullScreenOverlay.Visibility == Visibility.Visible) FitImageToViewport();
+    }
+
+    private void FitImageToViewport()
+    {
+        DispatcherQueue.TryEnqueue(() =>
+        {
+            try
+            {
+                var scrollViewer = ImageScrollViewer;
+                var image = FullScreenImage;
+
+                if (scrollViewer != null && image?.Source != null)
+                {
+                    // First, reset zoom to calculate natural sizes
+                    scrollViewer.ZoomToFactor(1.0f);
+
+                    // Give the UI time to update, then calculate fit zoom
+                    DispatcherQueue.TryEnqueue(() =>
+                    {
+                        var viewportWidth = scrollViewer.ViewportWidth;
+                        var viewportHeight = scrollViewer.ViewportHeight;
+                        var contentWidth = scrollViewer.ExtentWidth;
+                        var contentHeight = scrollViewer.ExtentHeight;
+
+                        if (viewportWidth > 0 && viewportHeight > 0 && contentWidth > 0 && contentHeight > 0)
+                        {
+                            var scaleX = viewportWidth / contentWidth;
+                            var scaleY = viewportHeight / contentHeight;
+                            var scale = Math.Min(scaleX, scaleY);
+
+                            // Only scale down if the image is larger than the viewport
+                            if (scale < 1.0) scrollViewer.ZoomToFactor((float)scale);
+                        }
+                    });
+                }
+            }
+            catch
+            {
+                // Ignore any exceptions
+            }
+        });
+    }
 }
