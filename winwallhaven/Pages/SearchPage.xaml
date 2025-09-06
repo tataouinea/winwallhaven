@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<Page
+    x:Class="winwallhaven.Pages.SearchPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d">
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <CommandBar DefaultLabelPosition="Right">
+            <CommandBar.Content>
+                <StackPanel Orientation="Horizontal" Spacing="8">
+                    <TextBox Width="300" PlaceholderText="Search"
+                             Text="{Binding Query, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                    <TextBlock VerticalAlignment="Center" Margin="12,0,0,0" Text="{Binding CurrentPage}" />
+                </StackPanel>
+            </CommandBar.Content>
+            <CommandBar.PrimaryCommands>
+                <AppBarButton Icon="Find" Label="Search" Command="{Binding SearchCommand}" />
+                <AppBarSeparator />
+                <AppBarButton Icon="Previous" Label="Prev" Command="{Binding PrevPageCommand}" />
+                <AppBarButton Icon="Next" Label="Next" Command="{Binding NextPageCommand}" />
+            </CommandBar.PrimaryCommands>
+        </CommandBar>
+
+        <Grid Grid.Row="1">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="360" />
+            </Grid.ColumnDefinitions>
+
+            <GridView ItemsSource="{Binding Results}" SelectionMode="Single"
+                      SelectedItem="{Binding Selected, Mode=TwoWay}">
+                <GridView.ItemTemplate>
+                    <DataTemplate>
+                        <StackPanel Width="220">
+                            <Image Source="{Binding Thumb}" Height="140" Stretch="UniformToFill" />
+                            <TextBlock Text="{Binding Id}" />
+                            <TextBlock>
+                                <Run Text="{Binding Width}" />
+                                <Run Text=" x " />
+                                <Run Text="{Binding Height}" />
+                            </TextBlock>
+                        </StackPanel>
+                    </DataTemplate>
+                </GridView.ItemTemplate>
+            </GridView>
+
+            <StackPanel Grid.Column="1" Padding="12" Spacing="8">
+                <Image Source="{Binding Selected.Thumb}" Height="220" Stretch="Uniform" />
+                <TextBlock Text="{Binding Selected.Id}" FontSize="18" FontWeight="Bold" />
+                <StackPanel Orientation="Horizontal" Spacing="8">
+                    <Button Content="Open" Command="{Binding OpenInBrowserCommand}"
+                            CommandParameter="{Binding Selected}" />
+                    <Button Content="Download" Command="{Binding DownloadCommand}"
+                            CommandParameter="{Binding Selected}" />
+                    <Button Content="Set Wallpaper" Command="{Binding SetAsWallpaperCommand}"
+                            CommandParameter="{Binding Selected}" />
+                </StackPanel>
+            </StackPanel>
+        </Grid>
+    </Grid>
+</Page>
