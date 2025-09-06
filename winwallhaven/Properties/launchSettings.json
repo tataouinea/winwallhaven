@@ -1,0 +1,10 @@
+{
+  "profiles": {
+    "winwallhaven (Package)": {
+      "commandName": "MsixPackage"
+    },
+    "winwallhaven (Unpackaged)": {
+      "commandName": "Project"
+    }
+  }
+}
