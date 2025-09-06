@@ -13,7 +13,53 @@
         <MicaBackdrop />
     </Window.SystemBackdrop>
 
-    <Grid>
+    <NavigationView x:Name="NavView"
+                    IsBackButtonVisible="Collapsed"
+                    IsSettingsVisible="True"
+                    PaneDisplayMode="LeftCompact"
+                    SelectionChanged="NavView_OnSelectionChanged"
+                    Loaded="NavView_OnLoaded">
+        <NavigationView.MenuItems>
+            <NavigationViewItem x:Name="LatestItem" Content="Latest" Tag="Latest">
+                <NavigationViewItem.Icon>
+                    <SymbolIcon Symbol="Clock" />
+                </NavigationViewItem.Icon>
+            </NavigationViewItem>
+            <NavigationViewItem x:Name="ToplistItem" Content="Toplist" Tag="Toplist">
+                <NavigationViewItem.Icon>
+                    <SymbolIcon Symbol="Favorite" />
+                </NavigationViewItem.Icon>
+            </NavigationViewItem>
+            <NavigationViewItem x:Name="RandomItem" Content="Random" Tag="Random">
+                <NavigationViewItem.Icon>
+                    <SymbolIcon Symbol="Sync" />
+                </NavigationViewItem.Icon>
+            </NavigationViewItem>
+            <NavigationViewItem x:Name="SearchItem" Content="Search" Tag="Search">
+                <NavigationViewItem.Icon>
+                    <SymbolIcon Symbol="Find" />
+                </NavigationViewItem.Icon>
+            </NavigationViewItem>
+        </NavigationView.MenuItems>
+
+        <NavigationView.FooterMenuItems>
+            <NavigationViewItem x:Name="AboutItem" Content="About" Tag="About">
+                <NavigationViewItem.Icon>
+                    <SymbolIcon Symbol="Help" />
+                </NavigationViewItem.Icon>
+            </NavigationViewItem>
+            <NavigationViewItem x:Name="ReportBugItem" Content="Report a bug" Tag="ReportBug">
+                <NavigationViewItem.Icon>
+                    <SymbolIcon Symbol="Important" />
+                </NavigationViewItem.Icon>
+            </NavigationViewItem>
+            <NavigationViewItem x:Name="FeedbackItem" Content="Feedback" Tag="Feedback">
+                <NavigationViewItem.Icon>
+                    <SymbolIcon Symbol="Like" />
+                </NavigationViewItem.Icon>
+            </NavigationViewItem>
+        </NavigationView.FooterMenuItems>
+
         <Frame x:Name="RootFrame" />
-    </Grid>
+    </NavigationView>
 </Window>

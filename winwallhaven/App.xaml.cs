@@ -50,5 +50,8 @@ public partial class App : Application
         services.AddHttpClient<IWallpaperService, WindowsWallpaperService>();
         services.AddHttpClient<IWallhavenApiClient, WallhavenApiClient>();
         services.AddSingleton<SearchViewModel>();
+        services.AddSingleton<LatestViewModel>();
+        services.AddSingleton<ToplistViewModel>();
+        services.AddSingleton<RandomViewModel>();
     }
 }
