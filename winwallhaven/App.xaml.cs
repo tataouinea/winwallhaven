@@ -1,6 +1,9 @@
 ﻿using System;
+using System.IO;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Microsoft.UI.Xaml;
+using Serilog;
 using winwallhaven.Core.Services;
 using winwallhaven.Core.Wallpapers;
 using winwallhaven.ViewModels;
@@ -35,18 +38,63 @@ public partial class App : Application
     /// <param name="args">Details about the launch request and process.</param>
     protected override void OnLaunched(LaunchActivatedEventArgs args)
     {
-        var services = new ServiceCollection();
-        ConfigureServices(services);
-        Services = services.BuildServiceProvider();
+        try
+        {
+            // Configure Serilog first
+            ConfigureSerilog();
 
-        _window = new MainWindow();
-        MainAppWindow = _window;
-        _window.Activate();
+            var services = new ServiceCollection();
+            ConfigureServices(services);
+            Services = services.BuildServiceProvider();
+
+            _window = new MainWindow();
+            MainAppWindow = _window;
+            _window.Activate();
+
+            Log.Information("Application launched successfully");
+        }
+        catch (Exception ex)
+        {
+            Log.Fatal(ex, "Application failed to start");
+            throw;
+        }
+    }
+
+    private static void ConfigureSerilog()
+    {
+        // Create logs directory in AppData
+        var logsDirectory = Path.Combine(
+            Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
+            "winwallhaven",
+            "logs");
+        Directory.CreateDirectory(logsDirectory);
+
+        var logFilePath = Path.Combine(logsDirectory, "winwallhaven.log");
+
+        // Configure Serilog
+        Log.Logger = new LoggerConfiguration()
+            .MinimumLevel.Debug()
+            .WriteTo.Debug()
+            .WriteTo.Console()
+            .WriteTo.File(logFilePath,
+                rollingInterval: RollingInterval.Day,
+                retainedFileCountLimit: 7,
+                fileSizeLimitBytes: 10 * 1024 * 1024, // 10MB
+                rollOnFileSizeLimit: true)
+            .CreateLogger();
+
+        Log.Information("Application starting up. Logs will be written to: {LogPath}", logFilePath);
     }
 
     private static void ConfigureServices(IServiceCollection services)
     {
-        services.AddLogging();
+        // Add Serilog as the logging provider
+        services.AddLogging(builder =>
+        {
+            builder.ClearProviders();
+            builder.AddSerilog();
+        });
+
         services.AddHttpClient<IWallpaperService, WindowsWallpaperService>();
         services.AddHttpClient<IWallhavenApiClient, WallhavenApiClient>();
         services.AddSingleton<SearchViewModel>();
