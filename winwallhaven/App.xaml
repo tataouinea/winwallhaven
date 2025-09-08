@@ -10,6 +10,108 @@
                 <XamlControlsResources xmlns="using:Microsoft.UI.Xaml.Controls" />
                 <!-- Other merged dictionaries here -->
             </ResourceDictionary.MergedDictionaries>
+
+            <!-- Shared Resources for Responsive Wallpaper Grid -->
+
+            <!-- Wallpaper Item Data Template -->
+            <DataTemplate x:Key="WallpaperItemTemplate">
+                <Border CornerRadius="8" Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                        BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1">
+                    <StackPanel>
+                        <Image Source="{Binding Thumb}" Stretch="UniformToFill"
+                               HorizontalAlignment="Stretch" VerticalAlignment="Top" />
+                        <StackPanel Padding="12,8,12,12" Spacing="4">
+                            <TextBlock Text="{Binding Id}" FontSize="12" FontWeight="SemiBold"
+                                       Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                            <TextBlock FontSize="11" Foreground="{ThemeResource TextFillColorTertiaryBrush}">
+                                <Run Text="{Binding Width}" />
+                                <Run Text=" × " />
+                                <Run Text="{Binding Height}" />
+                            </TextBlock>
+                        </StackPanel>
+                    </StackPanel>
+                </Border>
+            </DataTemplate>
+
+            <!-- Responsive GridView Style -->
+            <Style x:Key="ResponsiveWallpaperGridView" TargetType="GridView">
+                <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Disabled" />
+                <Setter Property="ScrollViewer.HorizontalScrollMode" Value="Disabled" />
+                <Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Auto" />
+                <Setter Property="ScrollViewer.VerticalScrollMode" Value="Enabled" />
+                <Setter Property="ScrollViewer.IsHorizontalRailEnabled" Value="False" />
+                <Setter Property="ScrollViewer.IsVerticalRailEnabled" Value="True" />
+                <Setter Property="ScrollViewer.ZoomMode" Value="Disabled" />
+                <Setter Property="SelectionMode" Value="Single" />
+                <Setter Property="ItemTemplate" Value="{StaticResource WallpaperItemTemplate}" />
+                <Setter Property="Padding" Value="20" />
+                <Setter Property="ItemsPanel">
+                    <Setter.Value>
+                        <ItemsPanelTemplate>
+                            <ItemsWrapGrid Orientation="Horizontal"
+                                           HorizontalAlignment="Center"
+                                           ItemWidth="220"
+                                           ItemHeight="180" />
+                        </ItemsPanelTemplate>
+                    </Setter.Value>
+                </Setter>
+                <Setter Property="ItemContainerStyle">
+                    <Setter.Value>
+                        <Style TargetType="GridViewItem">
+                            <Setter Property="Margin" Value="10" />
+                            <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+                            <Setter Property="VerticalContentAlignment" Value="Stretch" />
+                            <Setter Property="CornerRadius" Value="8" />
+                            <Setter Property="Background" Value="Transparent" />
+                            <Setter Property="BorderThickness" Value="0" />
+                        </Style>
+                    </Setter.Value>
+                </Setter>
+            </Style>
+
+            <!-- Responsive GridView Style with Context Menu for Search Page -->
+            <Style x:Key="ResponsiveWallpaperGridViewWithMenu" TargetType="GridView"
+                   BasedOn="{StaticResource ResponsiveWallpaperGridView}">
+                <Setter Property="ItemTemplate">
+                    <Setter.Value>
+                        <DataTemplate>
+                            <Border CornerRadius="8" Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                                    BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1">
+                                <StackPanel>
+                                    <Image Source="{Binding Thumb}" Stretch="UniformToFill"
+                                           HorizontalAlignment="Stretch" VerticalAlignment="Top"
+                                           Tag="{Binding}">
+                                        <Image.ContextFlyout>
+                                            <MenuFlyout>
+                                                <MenuFlyoutItem Text="Open in Browser" Icon="Globe"
+                                                                Command="{Binding DataContext.OpenInBrowserCommand, ElementName=RootPage}"
+                                                                CommandParameter="{Binding}" />
+                                                <MenuFlyoutItem Text="Download" Icon="Download"
+                                                                Command="{Binding DataContext.DownloadCommand, ElementName=RootPage}"
+                                                                CommandParameter="{Binding}" />
+                                                <MenuFlyoutItem Text="Set as Wallpaper" Icon="Pictures"
+                                                                Command="{Binding DataContext.SetAsWallpaperCommand, ElementName=RootPage}"
+                                                                CommandParameter="{Binding}" />
+                                            </MenuFlyout>
+                                        </Image.ContextFlyout>
+                                    </Image>
+                                    <StackPanel Padding="12,8,12,12" Spacing="4">
+                                        <TextBlock Text="{Binding Id}" FontSize="12" FontWeight="SemiBold"
+                                                   Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                                        <TextBlock FontSize="11"
+                                                   Foreground="{ThemeResource TextFillColorTertiaryBrush}">
+                                            <Run Text="{Binding Width}" />
+                                            <Run Text=" × " />
+                                            <Run Text="{Binding Height}" />
+                                        </TextBlock>
+                                    </StackPanel>
+                                </StackPanel>
+                            </Border>
+                        </DataTemplate>
+                    </Setter.Value>
+                </Setter>
+            </Style>
+
             <!-- Other app resources here -->
         </ResourceDictionary>
     </Application.Resources>

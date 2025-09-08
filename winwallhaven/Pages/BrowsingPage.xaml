@@ -32,21 +32,8 @@
         </CommandBar>
 
         <Grid Grid.Row="1">
-            <GridView ItemsSource="{Binding Results}">
-                <GridView.ItemTemplate>
-                    <DataTemplate>
-                        <StackPanel Width="220">
-                            <Image Source="{Binding Thumb}" Height="140" Stretch="UniformToFill" />
-                            <TextBlock Text="{Binding Id}" />
-                            <TextBlock>
-                                <Run Text="{Binding Width}" />
-                                <Run Text=" x " />
-                                <Run Text="{Binding Height}" />
-                            </TextBlock>
-                        </StackPanel>
-                    </DataTemplate>
-                </GridView.ItemTemplate>
-            </GridView>
+            <GridView ItemsSource="{Binding Results}"
+                      Style="{StaticResource ResponsiveWallpaperGridView}" />
         </Grid>
     </Grid>
 </Page>

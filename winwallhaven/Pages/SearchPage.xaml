@@ -32,37 +32,9 @@
         </CommandBar>
 
         <Grid Grid.Row="1">
-            <GridView ItemsSource="{Binding Results}" SelectionMode="Single"
-                      SelectedItem="{Binding Selected, Mode=TwoWay}">
-                <GridView.ItemTemplate>
-                    <DataTemplate>
-                        <StackPanel Width="220">
-                            <Image Source="{Binding Thumb}" Height="140" Stretch="UniformToFill"
-                                   DoubleTapped="Image_DoubleTapped" Tag="{Binding}">
-                                <Image.ContextFlyout>
-                                    <MenuFlyout>
-                                        <MenuFlyoutItem Text="Open in Browser" Icon="Globe"
-                                                        Command="{Binding DataContext.OpenInBrowserCommand, ElementName=RootPage}"
-                                                        CommandParameter="{Binding}" />
-                                        <MenuFlyoutItem Text="Download" Icon="Download"
-                                                        Command="{Binding DataContext.DownloadCommand, ElementName=RootPage}"
-                                                        CommandParameter="{Binding}" />
-                                        <MenuFlyoutItem Text="Set as Wallpaper" Icon="Pictures"
-                                                        Command="{Binding DataContext.SetAsWallpaperCommand, ElementName=RootPage}"
-                                                        CommandParameter="{Binding}" />
-                                    </MenuFlyout>
-                                </Image.ContextFlyout>
-                            </Image>
-                            <TextBlock Text="{Binding Id}" />
-                            <TextBlock>
-                                <Run Text="{Binding Width}" />
-                                <Run Text=" x " />
-                                <Run Text="{Binding Height}" />
-                            </TextBlock>
-                        </StackPanel>
-                    </DataTemplate>
-                </GridView.ItemTemplate>
-            </GridView>
+            <GridView ItemsSource="{Binding Results}"
+                      SelectedItem="{Binding Selected, Mode=TwoWay}"
+                      Style="{StaticResource ResponsiveWallpaperGridViewWithMenu}" />
         </Grid>
 
         <!-- Full Screen Preview Overlay -->
