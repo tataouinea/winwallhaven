@@ -20,17 +20,17 @@
                     SelectionChanged="NavView_OnSelectionChanged"
                     Loaded="NavView_OnLoaded">
         <NavigationView.MenuItems>
-            <NavigationViewItem x:Name="LatestItem" Content="Latest" Tag="Latest">
+            <NavigationViewItem x:Name="LatestItem" Content="Latest" Tag="Latest" Foreground="#ad3">
                 <NavigationViewItem.Icon>
                     <SymbolIcon Symbol="Clock" />
                 </NavigationViewItem.Icon>
             </NavigationViewItem>
-            <NavigationViewItem x:Name="ToplistItem" Content="Toplist" Tag="Toplist">
+            <NavigationViewItem x:Name="ToplistItem" Content="Toplist" Tag="Toplist" Foreground="#b760f0">
                 <NavigationViewItem.Icon>
                     <SymbolIcon Symbol="Favorite" />
                 </NavigationViewItem.Icon>
             </NavigationViewItem>
-            <NavigationViewItem x:Name="RandomItem" Content="Random" Tag="Random">
+            <NavigationViewItem x:Name="RandomItem" Content="Random" Tag="Random" Foreground="#e73">
                 <NavigationViewItem.Icon>
                     <SymbolIcon Symbol="Sync" />
                 </NavigationViewItem.Icon>
