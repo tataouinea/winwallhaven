@@ -73,6 +73,7 @@ public abstract class BrowsingViewModelBase : ViewModelBase
     public ICommand NextPageCommand { get; }
     public ICommand PrevPageCommand { get; }
     public ICommand OpenInBrowserCommand => _actions.OpenInBrowserCommand;
+    public ICommand OpenUserProfileCommand => _actions.OpenUserProfileCommand;
     public ICommand SetAsWallpaperCommand => _actions.SetAsWallpaperCommand;
     public ICommand SetAsLockScreenCommand => _actions.SetAsLockScreenCommand;
     public ICommand DownloadCommand => _actions.DownloadCommand;

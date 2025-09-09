@@ -4,7 +4,8 @@
     x:Class="winwallhaven.App"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:local="using:winwallhaven.Responsive">
+    xmlns:local="using:winwallhaven.Responsive"
+    xmlns:conv="using:winwallhaven.Converters">
     <Application.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
@@ -12,26 +13,93 @@
                 <!-- Other merged dictionaries here -->
             </ResourceDictionary.MergedDictionaries>
 
+            <!-- Converters -->
+            <conv:PurityToBrushConverter x:Key="PurityToBrushConverter" />
+            <conv:NullToVisibilityConverter x:Key="NullToVisibilityConverter" />
+            <conv:FileSizeToStringConverter x:Key="FileSizeToStringConverter" />
+            <conv:HexColorToBrushConverter x:Key="HexColorToBrushConverter" />
+
             <!-- Shared Resources for Responsive Wallpaper Grid -->
 
             <!-- Wallpaper Item Data Template -->
             <DataTemplate x:Key="WallpaperItemTemplate">
-                <Border CornerRadius="8" Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
-                        BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1">
-                    <StackPanel>
-                        <Image Source="{Binding Thumb}" Stretch="UniformToFill"
-                               HorizontalAlignment="Stretch" VerticalAlignment="Top" />
-                        <StackPanel Padding="12,8,12,12" Spacing="4">
-                            <TextBlock Text="{Binding Id}" FontSize="12" FontWeight="SemiBold"
-                                       Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
-                            <TextBlock FontSize="11" Foreground="{ThemeResource TextFillColorTertiaryBrush}">
-                                <Run Text="{Binding Width}" />
-                                <Run Text=" × " />
-                                <Run Text="{Binding Height}" />
-                            </TextBlock>
-                        </StackPanel>
-                    </StackPanel>
-                </Border>
+                <Grid>
+                    <Border CornerRadius="8" Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                            BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1">
+                        <Grid>
+                            <Image Source="{Binding Thumb}" Stretch="UniformToFill"
+                                   HorizontalAlignment="Stretch" VerticalAlignment="Stretch" />
+                            <!-- Overlays (absolute alignment to avoid stretching) -->
+                            <Grid>
+                                <ItemsControl Margin="6" ItemsSource="{Binding Colors}" HorizontalAlignment="Left"
+                                              VerticalAlignment="Top">
+                                    <ItemsControl.ItemsPanel>
+                                        <ItemsPanelTemplate>
+                                            <StackPanel Orientation="Horizontal" Spacing="2" />
+                                        </ItemsPanelTemplate>
+                                    </ItemsControl.ItemsPanel>
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate>
+                                            <Border Width="14" Height="14" CornerRadius="2"
+                                                    Background="{Binding Converter={StaticResource HexColorToBrushConverter}}"
+                                                    BorderBrush="#66000000" BorderThickness="1" />
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                                <StackPanel Margin="6" Spacing="2" HorizontalAlignment="Right" VerticalAlignment="Top">
+                                    <Border Padding="6,2" CornerRadius="4"
+                                            Background="{Binding Purity, Converter={StaticResource PurityToBrushConverter}}">
+                                        <TextBlock Text="{Binding Purity}" FontSize="11" FontWeight="SemiBold"
+                                                   Foreground="White" />
+                                    </Border>
+                                    <Border Padding="6,2" CornerRadius="4" Background="#66000000">
+                                        <TextBlock Text="{Binding Category}" FontSize="11" Foreground="White" />
+                                    </Border>
+                                </StackPanel>
+                                <Border Margin="6" Padding="6,2" CornerRadius="4" Background="#66000000"
+                                        HorizontalAlignment="Left" VerticalAlignment="Bottom">
+                                    <TextBlock Text="{Binding Resolution}" FontSize="11" Foreground="White" />
+                                </Border>
+                                <StackPanel Margin="6" HorizontalAlignment="Right" VerticalAlignment="Bottom"
+                                            Spacing="2">
+                                    <Border Padding="6,2" CornerRadius="4" Background="#66000000">
+                                        <StackPanel Orientation="Horizontal" Spacing="4">
+                                            <FontIcon Glyph="&#xE890;" FontSize="12" Foreground="White" />
+                                            <TextBlock Text="{Binding Views}" FontSize="11" Foreground="White" />
+                                        </StackPanel>
+                                    </Border>
+                                    <Border Padding="6,2" CornerRadius="4" Background="#66000000">
+                                        <StackPanel Orientation="Horizontal" Spacing="4">
+                                            <FontIcon Glyph="&#xE734;" FontSize="12" Foreground="White" />
+                                            <TextBlock Text="{Binding Favorites}" FontSize="11" Foreground="White" />
+                                        </StackPanel>
+                                    </Border>
+                                </StackPanel>
+                            </Grid>
+                        </Grid>
+                    </Border>
+                    <!-- Tooltip with extra details -->
+                    <ToolTipService.ToolTip>
+                        <ToolTip>
+                            <StackPanel Spacing="4">
+                                <TextBlock>
+                                    <Run Text="File Type: " /><Run Text="{Binding FileType}" />
+                                </TextBlock>
+                                <TextBlock>
+                                    <Run Text="Ratio: " /><Run Text="{Binding Ratio}" />
+                                </TextBlock>
+                                <TextBlock>
+                                    <Run Text="Size: " />
+                                    <Run
+                                        Text="{Binding FileSize, Converter={StaticResource FileSizeToStringConverter}}" />
+                                </TextBlock>
+                                <TextBlock>
+                                    <Run Text="Created: " /><Run Text="{Binding CreatedAt}" />
+                                </TextBlock>
+                            </StackPanel>
+                        </ToolTip>
+                    </ToolTipService.ToolTip>
+                </Grid>
             </DataTemplate>
 
             <!-- Responsive GridView Style -->
@@ -78,41 +146,105 @@
                 <Setter Property="ItemTemplate">
                     <Setter.Value>
                         <DataTemplate>
-                            <Border CornerRadius="8" Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
-                                    BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1">
-                                <StackPanel>
-                                    <Image Source="{Binding Thumb}" Stretch="UniformToFill"
-                                           HorizontalAlignment="Stretch" VerticalAlignment="Top"
-                                           Tag="{Binding}">
-                                        <Image.ContextFlyout>
-                                            <MenuFlyout>
-                                                <MenuFlyoutItem Text="Open in Browser" Icon="Globe"
-                                                                Command="{Binding DataContext.OpenInBrowserCommand, ElementName=RootPage}"
-                                                                CommandParameter="{Binding}" />
-                                                <MenuFlyoutItem Text="Download" Icon="Download"
-                                                                Command="{Binding DataContext.DownloadCommand, ElementName=RootPage}"
-                                                                CommandParameter="{Binding}" />
-                                                <MenuFlyoutItem Text="Set as Wallpaper" Icon="Pictures"
-                                                                Command="{Binding DataContext.SetAsWallpaperCommand, ElementName=RootPage}"
-                                                                CommandParameter="{Binding}" />
-                                                <MenuFlyoutItem Text="Set as Lock Screen" Icon="ProtectedDocument"
-                                                                Command="{Binding DataContext.SetAsLockScreenCommand, ElementName=RootPage}"
-                                                                CommandParameter="{Binding}" />
-                                            </MenuFlyout>
-                                        </Image.ContextFlyout>
-                                    </Image>
-                                    <StackPanel Padding="12,8,12,12" Spacing="4">
-                                        <TextBlock Text="{Binding Id}" FontSize="12" FontWeight="SemiBold"
-                                                   Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
-                                        <TextBlock FontSize="11"
-                                                   Foreground="{ThemeResource TextFillColorTertiaryBrush}">
-                                            <Run Text="{Binding Width}" />
-                                            <Run Text=" × " />
-                                            <Run Text="{Binding Height}" />
-                                        </TextBlock>
-                                    </StackPanel>
-                                </StackPanel>
-                            </Border>
+                            <Grid>
+                                <Border CornerRadius="8"
+                                        Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                                        BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1">
+                                    <Grid>
+                                        <Image Source="{Binding Thumb}" Stretch="UniformToFill"
+                                               HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+                                               Tag="{Binding}">
+                                            <Image.ContextFlyout>
+                                                <MenuFlyout>
+                                                    <MenuFlyoutItem Text="Open in Browser" Icon="Globe"
+                                                                    Command="{Binding DataContext.OpenInBrowserCommand, ElementName=RootPage}"
+                                                                    CommandParameter="{Binding}" />
+                                                    <MenuFlyoutItem Text="Download" Icon="Download"
+                                                                    Command="{Binding DataContext.DownloadCommand, ElementName=RootPage}"
+                                                                    CommandParameter="{Binding}" />
+                                                    <MenuFlyoutItem Text="Set as Wallpaper" Icon="Pictures"
+                                                                    Command="{Binding DataContext.SetAsWallpaperCommand, ElementName=RootPage}"
+                                                                    CommandParameter="{Binding}" />
+                                                    <MenuFlyoutItem Text="Set as Lock Screen" Icon="ProtectedDocument"
+                                                                    Command="{Binding DataContext.SetAsLockScreenCommand, ElementName=RootPage}"
+                                                                    CommandParameter="{Binding}" />
+                                                </MenuFlyout>
+                                            </Image.ContextFlyout>
+                                        </Image>
+                                        <!-- Overlays (absolute alignment) -->
+                                        <Grid>
+                                            <ItemsControl Margin="6" ItemsSource="{Binding Colors}"
+                                                          HorizontalAlignment="Left" VerticalAlignment="Top">
+                                                <ItemsControl.ItemsPanel>
+                                                    <ItemsPanelTemplate>
+                                                        <StackPanel Orientation="Horizontal" Spacing="2" />
+                                                    </ItemsPanelTemplate>
+                                                </ItemsControl.ItemsPanel>
+                                                <ItemsControl.ItemTemplate>
+                                                    <DataTemplate>
+                                                        <Border Width="14" Height="14" CornerRadius="2"
+                                                                Background="{Binding Converter={StaticResource HexColorToBrushConverter}}"
+                                                                BorderBrush="#66000000" BorderThickness="1" />
+                                                    </DataTemplate>
+                                                </ItemsControl.ItemTemplate>
+                                            </ItemsControl>
+                                            <StackPanel Margin="6" Spacing="2" HorizontalAlignment="Right"
+                                                        VerticalAlignment="Top">
+                                                <Border Padding="6,2" CornerRadius="4"
+                                                        Background="{Binding Purity, Converter={StaticResource PurityToBrushConverter}}">
+                                                    <TextBlock Text="{Binding Purity}" FontSize="11"
+                                                               FontWeight="SemiBold" Foreground="White" />
+                                                </Border>
+                                                <Border Padding="6,2" CornerRadius="4" Background="#66000000">
+                                                    <TextBlock Text="{Binding Category}" FontSize="11"
+                                                               Foreground="White" />
+                                                </Border>
+                                            </StackPanel>
+                                            <Border Margin="6" Padding="6,2" CornerRadius="4" Background="#66000000"
+                                                    HorizontalAlignment="Left" VerticalAlignment="Bottom">
+                                                <TextBlock Text="{Binding Resolution}" FontSize="11" Foreground="White" />
+                                            </Border>
+                                            <StackPanel Margin="6" HorizontalAlignment="Right"
+                                                        VerticalAlignment="Bottom" Spacing="2">
+                                                <Border Padding="6,2" CornerRadius="4" Background="#66000000">
+                                                    <StackPanel Orientation="Horizontal" Spacing="4">
+                                                        <FontIcon Glyph="&#xE890;" FontSize="12" Foreground="White" />
+                                                        <TextBlock Text="{Binding Views}" FontSize="11"
+                                                                   Foreground="White" />
+                                                    </StackPanel>
+                                                </Border>
+                                                <Border Padding="6,2" CornerRadius="4" Background="#66000000">
+                                                    <StackPanel Orientation="Horizontal" Spacing="4">
+                                                        <FontIcon Glyph="&#xE734;" FontSize="12" Foreground="White" />
+                                                        <TextBlock Text="{Binding Favorites}" FontSize="11"
+                                                                   Foreground="White" />
+                                                    </StackPanel>
+                                                </Border>
+                                            </StackPanel>
+                                        </Grid>
+                                    </Grid>
+                                </Border>
+                                <ToolTipService.ToolTip>
+                                    <ToolTip>
+                                        <StackPanel Spacing="4">
+                                            <TextBlock>
+                                                <Run Text="File Type: " /><Run Text="{Binding FileType}" />
+                                            </TextBlock>
+                                            <TextBlock>
+                                                <Run Text="Ratio: " /><Run Text="{Binding Ratio}" />
+                                            </TextBlock>
+                                            <TextBlock>
+                                                <Run Text="Size: " />
+                                                <Run
+                                                    Text="{Binding FileSize, Converter={StaticResource FileSizeToStringConverter}}" />
+                                            </TextBlock>
+                                            <TextBlock>
+                                                <Run Text="Created: " /><Run Text="{Binding CreatedAt}" />
+                                            </TextBlock>
+                                        </StackPanel>
+                                    </ToolTip>
+                                </ToolTipService.ToolTip>
+                            </Grid>
                         </DataTemplate>
                     </Setter.Value>
                 </Setter>

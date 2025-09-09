@@ -31,7 +31,8 @@ public sealed class WallpaperActions
         _logger = logger;
         _isBusy = isBusy;
 
-        OpenInBrowserCommand = new RelayCommand<Wallpaper?>(OpenInBrowser, w => w != null);
+        OpenInBrowserCommand = new RelayCommand<Wallpaper?>(OpenInBrowser, w => w is not null);
+        OpenUserProfileCommand = new RelayCommand<Wallpaper?>(OpenUserProfile, w => w?.UserProfileUrl != null);
         SetAsWallpaperCommand = new AsyncRelayCommand<Wallpaper?>(SetAsWallpaperAsync, w => w != null && !_isBusy());
         SetAsLockScreenCommand = new AsyncRelayCommand<Wallpaper?>(SetAsLockScreenAsync, w => w != null && !_isBusy());
 #if WINDOWS
@@ -44,6 +45,7 @@ public sealed class WallpaperActions
     }
 
     public ICommand OpenInBrowserCommand { get; }
+    public ICommand OpenUserProfileCommand { get; }
     public ICommand SetAsWallpaperCommand { get; }
     public ICommand SetAsLockScreenCommand { get; }
     public ICommand DownloadCommand { get; }
@@ -51,6 +53,7 @@ public sealed class WallpaperActions
     public void RaiseCanExec()
     {
         (OpenInBrowserCommand as RelayCommand<Wallpaper?>)?.RaiseCanExecuteChanged();
+        (OpenUserProfileCommand as RelayCommand<Wallpaper?>)?.RaiseCanExecuteChanged();
         (SetAsWallpaperCommand as AsyncRelayCommand<Wallpaper?>)?.RaiseCanExecuteChanged();
         (SetAsLockScreenCommand as AsyncRelayCommand<Wallpaper?>)?.RaiseCanExecuteChanged();
         (DownloadCommand as AsyncRelayCommand<Wallpaper?>)?.RaiseCanExecuteChanged();
@@ -67,6 +70,20 @@ public sealed class WallpaperActions
         catch (Exception ex)
         {
             _logger?.LogError(ex, "Failed to open browser for {Id}", w.Id);
+        }
+    }
+
+    private void OpenUserProfile(Wallpaper? w)
+    {
+        if (w?.UserProfileUrl == null) return;
+        try
+        {
+            var psi = new ProcessStartInfo { FileName = w.UserProfileUrl, UseShellExecute = true };
+            Process.Start(psi);
+        }
+        catch (Exception ex)
+        {
+            _logger?.LogError(ex, "Failed to open user profile for {User}", w?.UploaderUsername);
         }
     }
 

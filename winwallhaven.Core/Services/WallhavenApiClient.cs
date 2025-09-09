@@ -117,7 +117,13 @@ public sealed class WallhavenApiClient : IWallhavenApiClient
             Category = (string?)obj["category"] ?? string.Empty,
             Purity = (string?)obj["purity"] ?? string.Empty,
             Tags = tags,
-            ColorsHex = string.Join(',', obj["colors"] as JArray ?? new JArray())
+            ColorsHex = string.Join(',', obj["colors"] as JArray ?? new JArray()),
+            Ratio = (string?)obj["ratio"],
+            Views = (int?)obj["views"],
+            CreatedAt = (string?)obj["created_at"],
+            UploaderUsername = null,
+            UploaderAvatarUrl = null,
+            Favorites = (int?)obj["favorites"]
         };
     }
 }
