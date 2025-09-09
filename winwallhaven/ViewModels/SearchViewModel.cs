@@ -1,9 +1,6 @@
 using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
-using System.IO;
-using System.Runtime.Versioning;
 using System.Threading.Tasks;
 using System.Windows.Input;
 using Microsoft.Extensions.Logging;
@@ -12,14 +9,13 @@ using winwallhaven.Core.Models;
 using winwallhaven.Core.Services;
 using winwallhaven.Core.Wallpapers;
 #if WINDOWS
-using Windows.Storage.Pickers;
-using WinRT.Interop;
 #endif
 
 namespace winwallhaven.ViewModels;
 
 public sealed class SearchViewModel : ViewModelBase
 {
+    private readonly WallpaperActions _actions;
     private readonly IWallhavenApiClient _apiClient;
     private readonly ILogger<SearchViewModel>? _logger;
     private readonly IWallpaperService _wallpaperService;
@@ -38,15 +34,7 @@ public sealed class SearchViewModel : ViewModelBase
         SearchCommand = new AsyncRelayCommand(SearchFirstPageAsync, () => !IsLoading);
         NextPageCommand = new AsyncRelayCommand(LoadNextPageAsync, () => !IsLoading && CanLoadNextPage);
         PrevPageCommand = new AsyncRelayCommand(LoadPrevPageAsync, () => !IsLoading && CanLoadPrevPage);
-        OpenInBrowserCommand = new RelayCommand<Wallpaper?>(OpenInBrowser, w => w != null);
-        SetAsWallpaperCommand = new AsyncRelayCommand<Wallpaper?>(SetAsWallpaperAsync, w => w != null && !IsLoading);
-#if WINDOWS
-#pragma warning disable CA1416
-        DownloadCommand = new AsyncRelayCommand<Wallpaper?>(DownloadAsync, w => w != null && !IsLoading);
-#pragma warning restore CA1416
-#else
-    DownloadCommand = new AsyncRelayCommand<Wallpaper?>(_ => Task.CompletedTask, _ => false);
-#endif
+        _actions = new WallpaperActions(wallpaperService, logger, () => IsLoading);
     }
 
     public ObservableCollection<Wallpaper> Results { get; } = new();
@@ -103,9 +91,9 @@ public sealed class SearchViewModel : ViewModelBase
     public ICommand SearchCommand { get; }
     public ICommand NextPageCommand { get; }
     public ICommand PrevPageCommand { get; }
-    public ICommand OpenInBrowserCommand { get; }
-    public ICommand SetAsWallpaperCommand { get; }
-    public ICommand DownloadCommand { get; }
+    public ICommand OpenInBrowserCommand => _actions.OpenInBrowserCommand;
+    public ICommand SetAsWallpaperCommand => _actions.SetAsWallpaperCommand;
+    public ICommand DownloadCommand => _actions.DownloadCommand;
 
     private Window AppWindow => App.MainAppWindow!;
 
@@ -156,67 +144,12 @@ public sealed class SearchViewModel : ViewModelBase
         return LoadPageAsync();
     }
 
-    private void OpenInBrowser(Wallpaper? w)
-    {
-        if (w == null) return;
-        try
-        {
-            var psi = new ProcessStartInfo { FileName = w.Url, UseShellExecute = true };
-            Process.Start(psi);
-        }
-        catch
-        {
-        }
-    }
-
-    private async Task SetAsWallpaperAsync(Wallpaper? w)
-    {
-        if (w == null) return;
-        try
-        {
-            var cache = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
-                "winwallhaven", "cache");
-            Directory.CreateDirectory(cache);
-            var local = await _wallpaperService.DownloadAsync(w, cache);
-            await _wallpaperService.SetDesktopWallpaperAsync(local);
-        }
-        catch (Exception ex)
-        {
-            _logger?.LogError(ex, "Failed to set wallpaper");
-        }
-    }
-
-#if WINDOWS
-    [SupportedOSPlatform("windows10.0.10240")]
-    private async Task DownloadAsync(Wallpaper? w)
-    {
-        if (w == null) return;
-        try
-        {
-            var picker = new FileSavePicker();
-            picker.FileTypeChoices.Add("Image", new List<string> { Path.GetExtension(w.Path) });
-            picker.SuggestedFileName = w.Id + Path.GetExtension(w.Path);
-            var hwnd = WindowNative.GetWindowHandle(AppWindow);
-            InitializeWithWindow.Initialize(picker, hwnd);
-            var file = await picker.PickSaveFileAsync();
-            if (file == null) return;
-            await _wallpaperService.DownloadToFileAsync(w, file.Path);
-        }
-        catch (Exception ex)
-        {
-            _logger?.LogError(ex, "Failed to download wallpaper");
-        }
-    }
-#endif
-
     private void RaiseCanExec()
     {
         (SearchCommand as AsyncRelayCommand)?.RaiseCanExecuteChanged();
         (NextPageCommand as AsyncRelayCommand)?.RaiseCanExecuteChanged();
         (PrevPageCommand as AsyncRelayCommand)?.RaiseCanExecuteChanged();
-        (OpenInBrowserCommand as RelayCommand<Wallpaper?>)?.RaiseCanExecuteChanged();
-        (SetAsWallpaperCommand as AsyncRelayCommand<Wallpaper?>)?.RaiseCanExecuteChanged();
-        (DownloadCommand as AsyncRelayCommand<Wallpaper?>)?.RaiseCanExecuteChanged();
+        _actions.RaiseCanExec();
     }
 }
 

@@ -6,11 +6,14 @@ using System.Windows.Input;
 using Microsoft.Extensions.Logging;
 using winwallhaven.Core.Models;
 using winwallhaven.Core.Services;
+using winwallhaven.Core.Wallpapers;
 
 namespace winwallhaven.ViewModels;
 
 public abstract class BrowsingViewModelBase : ViewModelBase
 {
+    private readonly WallpaperActions _actions;
+    private readonly IWallpaperService _wallpaperService;
     protected readonly IWallhavenApiClient Api;
     protected readonly ILogger? Logger;
 
@@ -18,13 +21,15 @@ public abstract class BrowsingViewModelBase : ViewModelBase
     private bool _isLoading;
     private int? _lastPage;
 
-    protected BrowsingViewModelBase(IWallhavenApiClient api, ILogger? logger = null)
+    protected BrowsingViewModelBase(IWallhavenApiClient api, IWallpaperService wallpaperService, ILogger? logger = null)
     {
         Api = api;
         Logger = logger;
         RefreshCommand = new AsyncRelayCommand(LoadFirstPageAsync, () => !IsLoading);
         NextPageCommand = new AsyncRelayCommand(LoadNextPageAsync, () => !IsLoading && CanLoadNextPage);
         PrevPageCommand = new AsyncRelayCommand(LoadPrevPageAsync, () => !IsLoading && CanLoadPrevPage);
+        _wallpaperService = wallpaperService;
+        _actions = new WallpaperActions(wallpaperService, logger, () => IsLoading);
     }
 
     public ObservableCollection<Wallpaper> Results { get; } = new();
@@ -65,6 +70,9 @@ public abstract class BrowsingViewModelBase : ViewModelBase
     public ICommand RefreshCommand { get; }
     public ICommand NextPageCommand { get; }
     public ICommand PrevPageCommand { get; }
+    public ICommand OpenInBrowserCommand => _actions.OpenInBrowserCommand;
+    public ICommand SetAsWallpaperCommand => _actions.SetAsWallpaperCommand;
+    public ICommand DownloadCommand => _actions.DownloadCommand;
 
     protected abstract WallpaperSearchQuery BuildQuery(int page);
 
@@ -125,12 +133,14 @@ public abstract class BrowsingViewModelBase : ViewModelBase
         (RefreshCommand as AsyncRelayCommand)?.RaiseCanExecuteChanged();
         (NextPageCommand as AsyncRelayCommand)?.RaiseCanExecuteChanged();
         (PrevPageCommand as AsyncRelayCommand)?.RaiseCanExecuteChanged();
+        _actions.RaiseCanExec();
     }
 }
 
 public sealed class LatestViewModel : BrowsingViewModelBase
 {
-    public LatestViewModel(IWallhavenApiClient api, ILogger<LatestViewModel>? logger = null) : base(api, logger)
+    public LatestViewModel(IWallhavenApiClient api, IWallpaperService wallpaperService,
+        ILogger<LatestViewModel>? logger = null) : base(api, wallpaperService, logger)
     {
     }
 
@@ -142,7 +152,8 @@ public sealed class LatestViewModel : BrowsingViewModelBase
 
 public sealed class ToplistViewModel : BrowsingViewModelBase
 {
-    public ToplistViewModel(IWallhavenApiClient api, ILogger<ToplistViewModel>? logger = null) : base(api, logger)
+    public ToplistViewModel(IWallhavenApiClient api, IWallpaperService wallpaperService,
+        ILogger<ToplistViewModel>? logger = null) : base(api, wallpaperService, logger)
     {
     }
 
@@ -154,7 +165,8 @@ public sealed class ToplistViewModel : BrowsingViewModelBase
 
 public sealed class RandomViewModel : BrowsingViewModelBase
 {
-    public RandomViewModel(IWallhavenApiClient api, ILogger<RandomViewModel>? logger = null) : base(api, logger)
+    public RandomViewModel(IWallhavenApiClient api, IWallpaperService wallpaperService,
+        ILogger<RandomViewModel>? logger = null) : base(api, wallpaperService, logger)
     {
     }
 
