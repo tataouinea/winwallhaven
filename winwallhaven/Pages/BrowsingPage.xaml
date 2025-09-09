@@ -36,5 +36,14 @@
             <GridView ItemsSource="{Binding Results}"
                       Style="{StaticResource ResponsiveWallpaperGridViewWithMenu}" />
         </Grid>
+
+        <!-- Page Loading Overlay -->
+        <Grid Grid.RowSpan="2" Background="{ThemeResource SolidBackgroundFillColorBaseBrush}" Opacity="0.85"
+              Visibility="{Binding IsLoading, Converter={StaticResource BoolToVisibilityConverter}}">
+            <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="16">
+                <ProgressRing IsActive="True" Width="64" Height="64" />
+                <TextBlock Text="Loading wallpapers..." FontSize="14" FontWeight="SemiBold" />
+            </StackPanel>
+        </Grid>
     </Grid>
 </Page>

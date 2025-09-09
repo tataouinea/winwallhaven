@@ -5,7 +5,8 @@
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:local="using:winwallhaven.Responsive"
-    xmlns:conv="using:winwallhaven.Converters">
+    xmlns:conv="using:winwallhaven.Converters"
+    xmlns:controls="using:winwallhaven.Controls">
     <Application.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
@@ -18,6 +19,7 @@
             <conv:NullToVisibilityConverter x:Key="NullToVisibilityConverter" />
             <conv:FileSizeToStringConverter x:Key="FileSizeToStringConverter" />
             <conv:HexColorToBrushConverter x:Key="HexColorToBrushConverter" />
+            <conv:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter" />
 
             <!-- Shared Resources for Responsive Wallpaper Grid -->
 
@@ -27,8 +29,7 @@
                     <Border CornerRadius="8" Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
                             BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1">
                         <Grid>
-                            <Image Source="{Binding Thumb}" Stretch="UniformToFill"
-                                   HorizontalAlignment="Stretch" VerticalAlignment="Stretch" />
+                            <controls:AsyncImage Source="{Binding Thumb}" />
                             <!-- Overlays (absolute alignment to avoid stretching) -->
                             <Grid>
                                 <ItemsControl Margin="6" ItemsSource="{Binding Colors}" HorizontalAlignment="Left"
@@ -151,10 +152,8 @@
                                         Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
                                         BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1">
                                     <Grid>
-                                        <Image Source="{Binding Thumb}" Stretch="UniformToFill"
-                                               HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
-                                               Tag="{Binding}">
-                                            <Image.ContextFlyout>
+                                        <controls:AsyncImage Source="{Binding Thumb}" Tag="{Binding}">
+                                            <controls:AsyncImage.ContextFlyout>
                                                 <MenuFlyout>
                                                     <MenuFlyoutItem Text="Open in Browser" Icon="Globe"
                                                                     Command="{Binding DataContext.OpenInBrowserCommand, ElementName=RootPage}"
@@ -169,8 +168,8 @@
                                                                     Command="{Binding DataContext.SetAsLockScreenCommand, ElementName=RootPage}"
                                                                     CommandParameter="{Binding}" />
                                                 </MenuFlyout>
-                                            </Image.ContextFlyout>
-                                        </Image>
+                                            </controls:AsyncImage.ContextFlyout>
+                                        </controls:AsyncImage>
                                         <!-- Overlays (absolute alignment) -->
                                         <Grid>
                                             <ItemsControl Margin="6" ItemsSource="{Binding Colors}"
