@@ -9,9 +9,15 @@
     mc:Ignorable="d">
 
     <ScrollViewer>
-        <StackPanel Padding="24" Spacing="12">
+        <StackPanel Padding="24" Spacing="16">
             <TextBlock Text="Settings" FontSize="28" FontWeight="SemiBold" />
-            <TextBlock Text="This is a placeholder for future settings." />
+            <TextBlock Text="General" FontSize="20" Margin="0,16,0,4" />
+            <StackPanel Spacing="4">
+                <TextBlock Text="Lock screen warning" FontWeight="SemiBold" />
+                <TextBlock x:Name="LockScreenWarningStatusText" TextWrapping="Wrap" />
+                <Button Content="Reset warning" Click="OnResetLockScreenWarning" />
+            </StackPanel>
+            <TextBlock Text="(More settings coming soon)" Opacity="0.6" Margin="0,24,0,0" />
         </StackPanel>
     </ScrollViewer>
 </Page>

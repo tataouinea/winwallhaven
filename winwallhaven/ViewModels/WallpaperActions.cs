@@ -8,6 +8,7 @@ using System.Windows.Input;
 using Microsoft.Extensions.Logging;
 using winwallhaven.Core.Models;
 using winwallhaven.Core.Wallpapers;
+using winwallhaven.Services;
 #if WINDOWS
 using Windows.Storage.Pickers;
 using WinRT.Interop;
@@ -114,6 +115,9 @@ public sealed class WallpaperActions
             Directory.CreateDirectory(cache);
             var local = await _wallpaperService.DownloadAsync(w, cache);
             await _wallpaperService.SetLockScreenImageAsync(local);
+
+            // Show generic lock screen limitation warning (no mode detection).
+            _ = LockScreenWarningService.MaybeShowAsync(); // fire & forget
         }
         catch (Exception ex)
         {
