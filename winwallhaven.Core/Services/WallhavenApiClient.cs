@@ -42,6 +42,7 @@ public sealed class WallhavenApiClient : IWallhavenApiClient
         Add("sorting", query.Sorting);
         Add("order", query.Order);
         Add("page", query.Page?.ToString());
+        // Add("per_page", query.PerPage?.ToString());
         Add("atleast",
             query.AtLeastWidth.HasValue && query.AtLeastHeight.HasValue
                 ? $"{query.AtLeastWidth}x{query.AtLeastHeight}"
@@ -68,11 +69,11 @@ public sealed class WallhavenApiClient : IWallhavenApiClient
         var meta = json["meta"] as JObject;
         var currentPage = (int?)meta?["current_page"] ?? query.Page ?? 1;
         var lastPage = (int?)meta?["last_page"];
-        var perPage = (int?)meta?["per_page"];
+        // var perPage = (int?)meta?["per_page"]; // keep for reference though fixed (24)
         var total = (int?)meta?["total"];
         _logger.LogInformation("Search returned {Count} wallpapers for query {Query} (Page {Page}/{Last})", list.Count,
             query.Query, currentPage, lastPage);
-        return new WallpaperSearchResult(list, currentPage, lastPage, perPage, total);
+        return new WallpaperSearchResult(list, currentPage, lastPage, total);
     }
 
     public async Task<Wallpaper?> GetByIdAsync(string id, CancellationToken ct = default)

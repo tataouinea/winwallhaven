@@ -18,6 +18,7 @@ public sealed class SearchViewModel : ViewModelBase
     private readonly WallpaperActions _actions;
     private readonly IWallhavenApiClient _apiClient;
     private readonly ILogger<SearchViewModel>? _logger;
+    private readonly VirtualWallpaperPaginator _paginator;
     private readonly IWallpaperService _wallpaperService;
     private int _currentPage = 1;
     private bool _isLoading;
@@ -35,6 +36,7 @@ public sealed class SearchViewModel : ViewModelBase
         NextPageCommand = new AsyncRelayCommand(LoadNextPageAsync, () => !IsLoading && CanLoadNextPage);
         PrevPageCommand = new AsyncRelayCommand(LoadPrevPageAsync, () => !IsLoading && CanLoadPrevPage);
         _actions = new WallpaperActions(wallpaperService, logger, () => IsLoading);
+        _paginator = new VirtualWallpaperPaginator(apiClient);
     }
 
     public ObservableCollection<Wallpaper> Results { get; } = new();
@@ -105,14 +107,14 @@ public sealed class SearchViewModel : ViewModelBase
             Results.Clear();
             var sw = Stopwatch.StartNew();
             var sorting = string.IsNullOrWhiteSpace(Query) ? "date_added" : "relevance";
-            var result =
-                await _apiClient.SearchAsync(
-                    new WallpaperSearchQuery(Query, "111", "100", sorting, "desc", CurrentPage));
-            CurrentPage = result.CurrentPage;
-            LastPage = result.LastPage;
-            foreach (var w in result.Items) Results.Add(w);
+            var virtualPage = await _paginator.GetAsync(
+                apiPage => new WallpaperSearchQuery(Query, "111", "100", sorting, "desc", apiPage), CurrentPage);
+            CurrentPage = virtualPage.LogicalPage;
+            LastPage = virtualPage.LastLogicalPage; // likely null until end detected
+            foreach (var w in virtualPage.Items) Results.Add(w);
             sw.Stop();
-            _logger?.LogInformation("Loaded {Count} results in {Ms}ms", Results.Count, sw.ElapsedMilliseconds);
+            _logger?.LogInformation("Loaded logical page {Page} with {Count} results in {Ms}ms", CurrentPage,
+                Results.Count, sw.ElapsedMilliseconds);
         }
         catch (Exception ex)
         {

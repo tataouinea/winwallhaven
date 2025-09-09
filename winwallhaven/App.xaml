@@ -3,7 +3,8 @@
 <Application
     x:Class="winwallhaven.App"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:winwallhaven.Responsive">
     <Application.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
@@ -45,13 +46,15 @@
                 <Setter Property="SelectionMode" Value="Single" />
                 <Setter Property="ItemTemplate" Value="{StaticResource WallpaperItemTemplate}" />
                 <Setter Property="Padding" Value="20" />
+                <Setter Property="local:GridViewColumnSizer.EnableResponsiveColumns" Value="True" />
+                <Setter Property="local:GridViewColumnSizer.PageSize" Value="96" />
+                <Setter Property="local:GridViewColumnSizer.MinItemWidth" Value="180" />
+                <Setter Property="local:GridViewColumnSizer.MaxItemWidth" Value="300" />
                 <Setter Property="ItemsPanel">
                     <Setter.Value>
                         <ItemsPanelTemplate>
                             <ItemsWrapGrid Orientation="Horizontal"
-                                           HorizontalAlignment="Center"
-                                           ItemWidth="220"
-                                           ItemHeight="180" />
+                                           HorizontalAlignment="Center" />
                         </ItemsPanelTemplate>
                     </Setter.Value>
                 </Setter>

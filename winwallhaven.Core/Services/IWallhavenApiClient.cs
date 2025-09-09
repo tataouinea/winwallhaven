@@ -30,6 +30,5 @@ public sealed record WallpaperSearchResult(
     IReadOnlyList<Wallpaper> Items,
     int CurrentPage,
     int? LastPage,
-    int? PerPage,
     int? Total
 );

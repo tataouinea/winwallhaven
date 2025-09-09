@@ -13,6 +13,7 @@ namespace winwallhaven.ViewModels;
 public abstract class BrowsingViewModelBase : ViewModelBase
 {
     private readonly WallpaperActions _actions;
+    private readonly VirtualWallpaperPaginator _paginator;
     private readonly IWallpaperService _wallpaperService;
     protected readonly IWallhavenApiClient Api;
     protected readonly ILogger? Logger;
@@ -30,6 +31,7 @@ public abstract class BrowsingViewModelBase : ViewModelBase
         PrevPageCommand = new AsyncRelayCommand(LoadPrevPageAsync, () => !IsLoading && CanLoadPrevPage);
         _wallpaperService = wallpaperService;
         _actions = new WallpaperActions(wallpaperService, logger, () => IsLoading);
+        _paginator = new VirtualWallpaperPaginator(api);
     }
 
     public ObservableCollection<Wallpaper> Results { get; } = new();
@@ -110,11 +112,10 @@ public abstract class BrowsingViewModelBase : ViewModelBase
         {
             Results.Clear();
             var sw = Stopwatch.StartNew();
-            var query = BuildQuery(CurrentPage);
-            var result = await Api.SearchAsync(query);
-            CurrentPage = result.CurrentPage;
-            LastPage = result.LastPage;
-            foreach (var w in result.Items) Results.Add(w);
+            var virtualPage = await _paginator.GetAsync(p => BuildQuery(p), CurrentPage);
+            CurrentPage = virtualPage.LogicalPage;
+            LastPage = virtualPage.LastLogicalPage;
+            foreach (var w in virtualPage.Items) Results.Add(w);
             sw.Stop();
             (Logger as ILogger<BrowsingViewModelBase>)?.LogInformation("Loaded {Count} results in {Ms}ms",
                 Results.Count, sw.ElapsedMilliseconds);
