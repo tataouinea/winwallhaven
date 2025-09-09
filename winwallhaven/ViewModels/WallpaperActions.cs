@@ -33,6 +33,7 @@ public sealed class WallpaperActions
 
         OpenInBrowserCommand = new RelayCommand<Wallpaper?>(OpenInBrowser, w => w != null);
         SetAsWallpaperCommand = new AsyncRelayCommand<Wallpaper?>(SetAsWallpaperAsync, w => w != null && !_isBusy());
+        SetAsLockScreenCommand = new AsyncRelayCommand<Wallpaper?>(SetAsLockScreenAsync, w => w != null && !_isBusy());
 #if WINDOWS
 #pragma warning disable CA1416
         DownloadCommand = new AsyncRelayCommand<Wallpaper?>(DownloadAsync, w => w != null && !_isBusy());
@@ -44,12 +45,14 @@ public sealed class WallpaperActions
 
     public ICommand OpenInBrowserCommand { get; }
     public ICommand SetAsWallpaperCommand { get; }
+    public ICommand SetAsLockScreenCommand { get; }
     public ICommand DownloadCommand { get; }
 
     public void RaiseCanExec()
     {
         (OpenInBrowserCommand as RelayCommand<Wallpaper?>)?.RaiseCanExecuteChanged();
         (SetAsWallpaperCommand as AsyncRelayCommand<Wallpaper?>)?.RaiseCanExecuteChanged();
+        (SetAsLockScreenCommand as AsyncRelayCommand<Wallpaper?>)?.RaiseCanExecuteChanged();
         (DownloadCommand as AsyncRelayCommand<Wallpaper?>)?.RaiseCanExecuteChanged();
     }
 
@@ -81,6 +84,23 @@ public sealed class WallpaperActions
         catch (Exception ex)
         {
             _logger?.LogError(ex, "Failed to set wallpaper for {Id}", w.Id);
+        }
+    }
+
+    private async Task SetAsLockScreenAsync(Wallpaper? w)
+    {
+        if (w == null) return;
+        try
+        {
+            var cache = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
+                "winwallhaven", "cache");
+            Directory.CreateDirectory(cache);
+            var local = await _wallpaperService.DownloadAsync(w, cache);
+            await _wallpaperService.SetLockScreenImageAsync(local);
+        }
+        catch (Exception ex)
+        {
+            _logger?.LogError(ex, "Failed to set lock screen image for {Id}", w.Id);
         }
     }
 

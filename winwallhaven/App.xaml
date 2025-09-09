@@ -92,6 +92,9 @@
                                                 <MenuFlyoutItem Text="Set as Wallpaper" Icon="Pictures"
                                                                 Command="{Binding DataContext.SetAsWallpaperCommand, ElementName=RootPage}"
                                                                 CommandParameter="{Binding}" />
+                                                <MenuFlyoutItem Text="Set as Lock Screen" Icon="ProtectedDocument"
+                                                                Command="{Binding DataContext.SetAsLockScreenCommand, ElementName=RootPage}"
+                                                                CommandParameter="{Binding}" />
                                             </MenuFlyout>
                                         </Image.ContextFlyout>
                                     </Image>

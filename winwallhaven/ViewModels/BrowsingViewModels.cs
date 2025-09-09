@@ -72,6 +72,7 @@ public abstract class BrowsingViewModelBase : ViewModelBase
     public ICommand PrevPageCommand { get; }
     public ICommand OpenInBrowserCommand => _actions.OpenInBrowserCommand;
     public ICommand SetAsWallpaperCommand => _actions.SetAsWallpaperCommand;
+    public ICommand SetAsLockScreenCommand => _actions.SetAsLockScreenCommand;
     public ICommand DownloadCommand => _actions.DownloadCommand;
 
     protected abstract WallpaperSearchQuery BuildQuery(int page);

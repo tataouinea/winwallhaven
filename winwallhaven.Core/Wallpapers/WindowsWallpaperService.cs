@@ -152,4 +152,67 @@ public sealed class WindowsWallpaperService : IWallpaperService
             throw new InvalidOperationException("Failed to set wallpaper due to unexpected error.", ex);
         }
     }
+
+    /// <summary>
+    ///     Sets the lock screen image using Windows.System.UserProfile.LockScreen.SetImageFileAsync().
+    /// </summary>
+    public async Task SetLockScreenImageAsync(string localFilePath)
+    {
+        if (!File.Exists(localFilePath)) throw new FileNotFoundException(localFilePath);
+        if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows)) throw new PlatformNotSupportedException();
+
+        try
+        {
+            // Use the modern LockScreen API for packaged applications (Windows 10+)
+            if (OperatingSystem.IsWindowsVersionAtLeast(10, 0, 10240))
+            {
+                _logger?.LogDebug("Windows version check passed (>= 10.0.10240)");
+
+                try
+                {
+                    // Create a StorageFile directly from the file path - no need to copy to app local folder
+                    var storageFile = await StorageFile.GetFileFromPathAsync(localFilePath);
+
+                    _logger?.LogInformation("Calling LockScreen.SetImageFileAsync for file: {Path}", localFilePath);
+
+                    // Use the simpler LockScreen.SetImageFileAsync - works directly with any accessible StorageFile
+                    await LockScreen.SetImageFileAsync(storageFile);
+
+                    _logger?.LogInformation("Lock screen image applied successfully from {Path} using LockScreen API",
+                        localFilePath);
+                }
+                catch (UnauthorizedAccessException ex)
+                {
+                    _logger?.LogError(ex,
+                        "UnauthorizedAccessException when using LockScreen API for {Path}. This may indicate insufficient permissions or group policy restrictions.",
+                        localFilePath);
+                    throw new InvalidOperationException(
+                        "Insufficient permissions to set lock screen image. Check if lock screen personalization is disabled by group policy.",
+                        ex);
+                }
+                catch (Exception ex)
+                {
+                    _logger?.LogError(ex,
+                        "Exception when using LockScreen API for {Path}. Exception type: {ExceptionType}",
+                        localFilePath,
+                        ex.GetType().Name);
+                    throw new InvalidOperationException("Failed to set lock screen image due to unexpected error.", ex);
+                }
+            }
+            else
+            {
+                _logger?.LogError("Windows version check failed - not >= 10.0.10240");
+                throw new PlatformNotSupportedException(
+                    "Windows 10 or later is required for lock screen image setting.");
+            }
+        }
+        catch (Exception ex) when (!(ex is InvalidOperationException || ex is PlatformNotSupportedException))
+        {
+            _logger?.LogError(ex,
+                "Unexpected exception when setting lock screen image for {Path}. Exception type: {ExceptionType}",
+                localFilePath,
+                ex.GetType().Name);
+            throw new InvalidOperationException("Failed to set lock screen image due to unexpected error.", ex);
+        }
+    }
 }
