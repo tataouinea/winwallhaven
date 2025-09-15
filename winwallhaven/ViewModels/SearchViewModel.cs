@@ -96,6 +96,7 @@ public sealed class SearchViewModel : ViewModelBase
     public ICommand OpenInBrowserCommand => _actions.OpenInBrowserCommand;
     public ICommand OpenUserProfileCommand => _actions.OpenUserProfileCommand;
     public ICommand SetAsWallpaperCommand => _actions.SetAsWallpaperCommand;
+    public ICommand SetAsLockScreenCommand => _actions.SetAsLockScreenCommand;
     public ICommand DownloadCommand => _actions.DownloadCommand;
 
     private Window AppWindow => App.MainAppWindow!;
