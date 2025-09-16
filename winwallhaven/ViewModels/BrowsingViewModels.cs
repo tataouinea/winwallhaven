@@ -3,10 +3,12 @@ using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Threading.Tasks;
 using System.Windows.Input;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using winwallhaven.Core.Models;
 using winwallhaven.Core.Services;
 using winwallhaven.Core.Wallpapers;
+using winwallhaven.Services;
 
 namespace winwallhaven.ViewModels;
 
@@ -30,7 +32,8 @@ public abstract class BrowsingViewModelBase : ViewModelBase
         NextPageCommand = new AsyncRelayCommand(LoadNextPageAsync, () => !IsLoading && CanLoadNextPage);
         PrevPageCommand = new AsyncRelayCommand(LoadPrevPageAsync, () => !IsLoading && CanLoadPrevPage);
         _wallpaperService = wallpaperService;
-        _actions = new WallpaperActions(wallpaperService, logger, () => IsLoading);
+        _actions = new WallpaperActions(wallpaperService, App.Services.GetRequiredService<IHistoryService>(), logger,
+            () => IsLoading);
         _paginator = new VirtualWallpaperPaginator(api);
     }
 
@@ -77,6 +80,7 @@ public abstract class BrowsingViewModelBase : ViewModelBase
     public ICommand SetAsWallpaperCommand => _actions.SetAsWallpaperCommand;
     public ICommand SetAsLockScreenCommand => _actions.SetAsLockScreenCommand;
     public ICommand DownloadCommand => _actions.DownloadCommand;
+    public ICommand RemoveFromHistoryCommand => _actions.RemoveFromHistoryCommand;
 
     protected abstract WallpaperSearchQuery BuildQuery(int page);
 

@@ -167,6 +167,11 @@
                                                     <MenuFlyoutItem Text="Set as Lock Screen" Icon="ProtectedDocument"
                                                                     Command="{Binding DataContext.SetAsLockScreenCommand, ElementName=RootPage}"
                                                                     CommandParameter="{Binding}" />
+                                                    <MenuFlyoutSeparator />
+                                                    <MenuFlyoutItem Text="Remove from History" Icon="Delete"
+                                                                    Command="{Binding DataContext.RemoveFromHistoryCommand, ElementName=RootPage}"
+                                                                    CommandParameter="{Binding}"
+                                                                    Visibility="{Binding DataContext.RemoveFromHistoryCommand, ElementName=RootPage, Converter={StaticResource NullToVisibilityConverter}}" />
                                                 </MenuFlyout>
                                             </controls:AsyncImage.ContextFlyout>
                                         </controls:AsyncImage>

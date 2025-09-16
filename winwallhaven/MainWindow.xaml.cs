@@ -46,6 +46,9 @@ public sealed partial class MainWindow : Window
             case "Random":
                 RootFrame.Navigate(typeof(BrowsingPage), typeof(RandomViewModel));
                 break;
+            case "History":
+                RootFrame.Navigate(typeof(HistoryPage));
+                break;
             case "Search":
                 RootFrame.Navigate(typeof(SearchPage));
                 break;

@@ -22,13 +22,16 @@ namespace winwallhaven.ViewModels;
 /// </summary>
 public sealed class WallpaperActions
 {
+    private readonly IHistoryService _historyService;
     private readonly Func<bool> _isBusy;
     private readonly ILogger? _logger;
     private readonly IWallpaperService _wallpaperService;
 
-    public WallpaperActions(IWallpaperService wallpaperService, ILogger? logger, Func<bool> isBusy)
+    public WallpaperActions(IWallpaperService wallpaperService, IHistoryService historyService, ILogger? logger,
+        Func<bool> isBusy)
     {
         _wallpaperService = wallpaperService;
+        _historyService = historyService;
         _logger = logger;
         _isBusy = isBusy;
 
@@ -36,6 +39,7 @@ public sealed class WallpaperActions
         OpenUserProfileCommand = new RelayCommand<Wallpaper?>(OpenUserProfile, w => w?.UserProfileUrl != null);
         SetAsWallpaperCommand = new AsyncRelayCommand<Wallpaper?>(SetAsWallpaperAsync, w => w != null && !_isBusy());
         SetAsLockScreenCommand = new AsyncRelayCommand<Wallpaper?>(SetAsLockScreenAsync, w => w != null && !_isBusy());
+        RemoveFromHistoryCommand = new AsyncRelayCommand<Wallpaper?>(RemoveHistoryAsync, w => w != null && !_isBusy());
 #if WINDOWS
 #pragma warning disable CA1416
         DownloadCommand = new AsyncRelayCommand<Wallpaper?>(DownloadAsync, w => w != null && !_isBusy());
@@ -50,6 +54,7 @@ public sealed class WallpaperActions
     public ICommand SetAsWallpaperCommand { get; }
     public ICommand SetAsLockScreenCommand { get; }
     public ICommand DownloadCommand { get; }
+    public ICommand RemoveFromHistoryCommand { get; }
 
     public void RaiseCanExec()
     {
@@ -58,6 +63,7 @@ public sealed class WallpaperActions
         (SetAsWallpaperCommand as AsyncRelayCommand<Wallpaper?>)?.RaiseCanExecuteChanged();
         (SetAsLockScreenCommand as AsyncRelayCommand<Wallpaper?>)?.RaiseCanExecuteChanged();
         (DownloadCommand as AsyncRelayCommand<Wallpaper?>)?.RaiseCanExecuteChanged();
+        (RemoveFromHistoryCommand as AsyncRelayCommand<Wallpaper?>)?.RaiseCanExecuteChanged();
     }
 
     private void OpenInBrowser(Wallpaper? w)
@@ -98,6 +104,9 @@ public sealed class WallpaperActions
             Directory.CreateDirectory(cache);
             var local = await _wallpaperService.DownloadAsync(w, cache);
             await _wallpaperService.SetDesktopWallpaperAsync(local);
+
+            // record history independent from cache location
+            await _historyService.RecordAsync(w, HistoryAction.Wallpaper);
         }
         catch (Exception ex)
         {
@@ -115,6 +124,9 @@ public sealed class WallpaperActions
             Directory.CreateDirectory(cache);
             var local = await _wallpaperService.DownloadAsync(w, cache);
             await _wallpaperService.SetLockScreenImageAsync(local);
+
+            // record history independent from cache location
+            await _historyService.RecordAsync(w, HistoryAction.LockScreen);
 
             // Show generic lock screen limitation warning (no mode detection).
             _ = LockScreenWarningService.MaybeShowAsync(); // fire & forget
@@ -149,4 +161,17 @@ public sealed class WallpaperActions
         }
     }
 #endif
+
+    private async Task RemoveHistoryAsync(Wallpaper? w)
+    {
+        if (w == null) return;
+        try
+        {
+            await _historyService.RemoveAsync(w.Id);
+        }
+        catch (Exception ex)
+        {
+            _logger?.LogError(ex, "Failed to remove history for {Id}", w.Id);
+        }
+    }
 }

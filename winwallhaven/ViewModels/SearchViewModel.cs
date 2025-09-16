@@ -3,11 +3,13 @@ using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Threading.Tasks;
 using System.Windows.Input;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.UI.Xaml;
 using winwallhaven.Core.Models;
 using winwallhaven.Core.Services;
 using winwallhaven.Core.Wallpapers;
+using winwallhaven.Services;
 #if WINDOWS
 #endif
 
@@ -35,7 +37,8 @@ public sealed class SearchViewModel : ViewModelBase
         SearchCommand = new AsyncRelayCommand(SearchFirstPageAsync, () => !IsLoading);
         NextPageCommand = new AsyncRelayCommand(LoadNextPageAsync, () => !IsLoading && CanLoadNextPage);
         PrevPageCommand = new AsyncRelayCommand(LoadPrevPageAsync, () => !IsLoading && CanLoadPrevPage);
-        _actions = new WallpaperActions(wallpaperService, logger, () => IsLoading);
+        _actions = new WallpaperActions(wallpaperService, App.Services.GetRequiredService<IHistoryService>(), logger,
+            () => IsLoading);
         _paginator = new VirtualWallpaperPaginator(apiClient);
     }
 
@@ -98,6 +101,7 @@ public sealed class SearchViewModel : ViewModelBase
     public ICommand SetAsWallpaperCommand => _actions.SetAsWallpaperCommand;
     public ICommand SetAsLockScreenCommand => _actions.SetAsLockScreenCommand;
     public ICommand DownloadCommand => _actions.DownloadCommand;
+    public ICommand RemoveFromHistoryCommand => _actions.RemoveFromHistoryCommand;
 
     private Window AppWindow => App.MainAppWindow!;
 

@@ -6,6 +6,7 @@ using Microsoft.UI.Xaml;
 using Serilog;
 using winwallhaven.Core.Services;
 using winwallhaven.Core.Wallpapers;
+using winwallhaven.Services;
 using winwallhaven.ViewModels;
 
 // To learn more about WinUI, the WinUI project structure,
@@ -97,9 +98,11 @@ public partial class App : Application
 
         services.AddHttpClient<IWallpaperService, WindowsWallpaperService>();
         services.AddHttpClient<IWallhavenApiClient, WallhavenApiClient>();
+        services.AddSingleton<IHistoryService, LocalHistoryService>();
         services.AddSingleton<SearchViewModel>();
         services.AddSingleton<LatestViewModel>();
         services.AddSingleton<ToplistViewModel>();
         services.AddSingleton<RandomViewModel>();
+        services.AddSingleton<HistoryViewModel>();
     }
 }

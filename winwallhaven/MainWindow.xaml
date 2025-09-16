@@ -35,6 +35,12 @@
                     <SymbolIcon Symbol="Sync" />
                 </NavigationViewItem.Icon>
             </NavigationViewItem>
+            <NavigationViewItem x:Name="HistoryItem" Content="History" Tag="History" Foreground="#6ab">
+                <NavigationViewItem.Icon>
+                    <!-- Using MDL2 font glyph for a clock/history-like icon -->
+                    <FontIcon Glyph="&#xE81C;" />
+                </NavigationViewItem.Icon>
+            </NavigationViewItem>
             <NavigationViewItem x:Name="SearchItem" Content="Search" Tag="Search">
                 <NavigationViewItem.Icon>
                     <SymbolIcon Symbol="Find" />
