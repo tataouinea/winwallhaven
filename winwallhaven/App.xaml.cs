@@ -50,6 +50,9 @@ public partial class App : Application
 
             _window = new MainWindow();
             MainAppWindow = _window;
+            // Apply the persisted theme preference (default System)
+            var themeService = Services.GetService(typeof(IThemeService)) as IThemeService;
+            themeService?.ApplyTheme(themeService.CurrentTheme);
             _window.Activate();
 
             Log.Information("Application launched successfully");
@@ -99,6 +102,7 @@ public partial class App : Application
         services.AddHttpClient<IWallpaperService, WindowsWallpaperService>();
         services.AddHttpClient<IWallhavenApiClient, WallhavenApiClient>();
         services.AddSingleton<IHistoryService, LocalHistoryService>();
+        services.AddSingleton<IThemeService, ThemeService>();
         services.AddSingleton<SearchViewModel>();
         services.AddSingleton<LatestViewModel>();
         services.AddSingleton<ToplistViewModel>();

@@ -11,6 +11,18 @@
     <ScrollViewer>
         <StackPanel Padding="24" Spacing="16">
             <TextBlock Text="Settings" FontSize="28" FontWeight="SemiBold" />
+            <TextBlock Text="Appearance" FontSize="20" Margin="0,16,0,4" />
+            <StackPanel Spacing="4">
+                <TextBlock Text="App theme" FontWeight="SemiBold" />
+                <ComboBox x:Name="ThemeComboBox"
+                          SelectionChanged="OnThemeSelectionChanged"
+                          Width="200">
+                    <ComboBoxItem Content="System (default)" />
+                    <ComboBoxItem Content="Light" />
+                    <ComboBoxItem Content="Dark" />
+                </ComboBox>
+                <TextBlock Text="Choose System to follow Windows theme." Opacity="0.7" />
+            </StackPanel>
             <TextBlock Text="General" FontSize="20" Margin="0,16,0,4" />
             <StackPanel Spacing="4">
                 <TextBlock Text="Lock screen warning" FontWeight="SemiBold" />
