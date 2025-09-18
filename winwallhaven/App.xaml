@@ -141,8 +141,116 @@
                 </Setter>
             </Style>
 
-            <!-- Responsive GridView Style with Context Menu for Search Page -->
+            <!-- Responsive GridView Style with Context Menu (shared, no history delete) -->
             <Style x:Key="ResponsiveWallpaperGridViewWithMenu" TargetType="GridView"
+                   BasedOn="{StaticResource ResponsiveWallpaperGridView}">
+                <Setter Property="ItemTemplate">
+                    <Setter.Value>
+                        <DataTemplate>
+                            <Grid>
+                                <Border CornerRadius="8"
+                                        Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                                        BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1">
+                                    <Grid>
+                                        <controls:AsyncImage Source="{Binding Thumb}" Tag="{Binding}">
+                                            <controls:AsyncImage.ContextFlyout>
+                                                <MenuFlyout>
+                                                    <MenuFlyoutItem Text="Open in Browser" Icon="Globe"
+                                                                    Command="{Binding DataContext.OpenInBrowserCommand, ElementName=RootPage}"
+                                                                    CommandParameter="{Binding}" />
+                                                    <MenuFlyoutItem Text="Download" Icon="Download"
+                                                                    Command="{Binding DataContext.DownloadCommand, ElementName=RootPage}"
+                                                                    CommandParameter="{Binding}" />
+                                                    <MenuFlyoutItem Text="Set as Wallpaper" Icon="Pictures"
+                                                                    Command="{Binding DataContext.SetAsWallpaperCommand, ElementName=RootPage}"
+                                                                    CommandParameter="{Binding}" />
+                                                    <MenuFlyoutItem Text="Set as Lock Screen" Icon="ProtectedDocument"
+                                                                    Command="{Binding DataContext.SetAsLockScreenCommand, ElementName=RootPage}"
+                                                                    CommandParameter="{Binding}" />
+                                                </MenuFlyout>
+                                            </controls:AsyncImage.ContextFlyout>
+                                        </controls:AsyncImage>
+                                        <!-- Overlays (absolute alignment) -->
+                                        <Grid>
+                                            <ItemsControl Margin="6" ItemsSource="{Binding Colors}"
+                                                          HorizontalAlignment="Left" VerticalAlignment="Top">
+                                                <ItemsControl.ItemsPanel>
+                                                    <ItemsPanelTemplate>
+                                                        <StackPanel Orientation="Horizontal" Spacing="2" />
+                                                    </ItemsPanelTemplate>
+                                                </ItemsControl.ItemsPanel>
+                                                <ItemsControl.ItemTemplate>
+                                                    <DataTemplate>
+                                                        <Border Width="14" Height="14" CornerRadius="2"
+                                                                Background="{Binding Converter={StaticResource HexColorToBrushConverter}}"
+                                                                BorderBrush="#66000000" BorderThickness="1" />
+                                                    </DataTemplate>
+                                                </ItemsControl.ItemTemplate>
+                                            </ItemsControl>
+                                            <StackPanel Margin="6" Spacing="2" HorizontalAlignment="Right"
+                                                        VerticalAlignment="Top">
+                                                <Border Padding="6,2" CornerRadius="4"
+                                                        Background="{Binding Purity, Converter={StaticResource PurityToBrushConverter}}">
+                                                    <TextBlock Text="{Binding Purity}" FontSize="11"
+                                                               FontWeight="SemiBold" Foreground="White" />
+                                                </Border>
+                                                <Border Padding="6,2" CornerRadius="4" Background="#66000000">
+                                                    <TextBlock Text="{Binding Category}" FontSize="11"
+                                                               Foreground="White" />
+                                                </Border>
+                                            </StackPanel>
+                                            <Border Margin="6" Padding="6,2" CornerRadius="4" Background="#66000000"
+                                                    HorizontalAlignment="Left" VerticalAlignment="Bottom">
+                                                <TextBlock Text="{Binding Resolution}" FontSize="11" Foreground="White" />
+                                            </Border>
+                                            <StackPanel Margin="6" HorizontalAlignment="Right"
+                                                        VerticalAlignment="Bottom" Spacing="2">
+                                                <Border Padding="6,2" CornerRadius="4" Background="#66000000">
+                                                    <StackPanel Orientation="Horizontal" Spacing="4">
+                                                        <FontIcon Glyph="&#xE890;" FontSize="12" Foreground="White" />
+                                                        <TextBlock Text="{Binding Views}" FontSize="11"
+                                                                   Foreground="White" />
+                                                    </StackPanel>
+                                                </Border>
+                                                <Border Padding="6,2" CornerRadius="4" Background="#66000000">
+                                                    <StackPanel Orientation="Horizontal" Spacing="4">
+                                                        <FontIcon Glyph="&#xE734;" FontSize="12" Foreground="White" />
+                                                        <TextBlock Text="{Binding Favorites}" FontSize="11"
+                                                                   Foreground="White" />
+                                                    </StackPanel>
+                                                </Border>
+                                            </StackPanel>
+                                        </Grid>
+                                    </Grid>
+                                </Border>
+                                <ToolTipService.ToolTip>
+                                    <ToolTip>
+                                        <StackPanel Spacing="4">
+                                            <TextBlock>
+                                                <Run Text="File Type: " /><Run Text="{Binding FileType}" />
+                                            </TextBlock>
+                                            <TextBlock>
+                                                <Run Text="Ratio: " /><Run Text="{Binding Ratio}" />
+                                            </TextBlock>
+                                            <TextBlock>
+                                                <Run Text="Size: " />
+                                                <Run
+                                                    Text="{Binding FileSize, Converter={StaticResource FileSizeToStringConverter}}" />
+                                            </TextBlock>
+                                            <TextBlock>
+                                                <Run Text="Created: " /><Run Text="{Binding CreatedAt}" />
+                                            </TextBlock>
+                                        </StackPanel>
+                                    </ToolTip>
+                                </ToolTipService.ToolTip>
+                            </Grid>
+                        </DataTemplate>
+                    </Setter.Value>
+                </Setter>
+            </Style>
+
+            <!-- History page variant: includes the "Remove from History" action -->
+            <Style x:Key="ResponsiveWallpaperGridViewWithHistoryMenu" TargetType="GridView"
                    BasedOn="{StaticResource ResponsiveWallpaperGridView}">
                 <Setter Property="ItemTemplate">
                     <Setter.Value>
@@ -170,8 +278,7 @@
                                                     <MenuFlyoutSeparator />
                                                     <MenuFlyoutItem Text="Remove from History" Icon="Delete"
                                                                     Command="{Binding DataContext.RemoveFromHistoryCommand, ElementName=RootPage}"
-                                                                    CommandParameter="{Binding}"
-                                                                    Visibility="{Binding DataContext.RemoveFromHistoryCommand, ElementName=RootPage, Converter={StaticResource NullToVisibilityConverter}}" />
+                                                                    CommandParameter="{Binding}" />
                                                 </MenuFlyout>
                                             </controls:AsyncImage.ContextFlyout>
                                         </controls:AsyncImage>

@@ -3,8 +3,10 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Input;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using winwallhaven.Core.Models;
+using winwallhaven.Core.Wallpapers;
 using winwallhaven.Services;
 
 namespace winwallhaven.ViewModels;
@@ -12,6 +14,7 @@ namespace winwallhaven.ViewModels;
 public sealed class HistoryViewModel : ViewModelBase
 {
     private const int PageSize = 96;
+    private readonly WallpaperActions _actions;
     private readonly IHistoryService _history;
     private readonly ILogger<HistoryViewModel>? _logger;
     private int _currentPage = 1;
@@ -23,6 +26,8 @@ public sealed class HistoryViewModel : ViewModelBase
     {
         _history = history;
         _logger = logger;
+        _actions = new WallpaperActions(App.Services.GetRequiredService<IWallpaperService>(), history, logger,
+            () => IsLoading);
         RefreshCommand = new AsyncRelayCommand(LoadAsync, () => !IsLoading);
         NextPageCommand = new AsyncRelayCommand(LoadNextPageAsync, () => !IsLoading && CanLoadNextPage);
         PrevPageCommand = new AsyncRelayCommand(LoadPrevPageAsync, () => !IsLoading && CanLoadPrevPage);
@@ -69,7 +74,14 @@ public sealed class HistoryViewModel : ViewModelBase
     public ICommand NextPageCommand { get; }
     public ICommand PrevPageCommand { get; }
     public ICommand RemoveFromHistoryCommand { get; }
+
     public ICommand ClearHistoryCommand { get; }
+
+    // Expose shared actions used by context menu
+    public ICommand OpenInBrowserCommand => _actions.OpenInBrowserCommand;
+    public ICommand SetAsWallpaperCommand => _actions.SetAsWallpaperCommand;
+    public ICommand SetAsLockScreenCommand => _actions.SetAsLockScreenCommand;
+    public ICommand DownloadCommand => _actions.DownloadCommand;
 
     public async Task LoadAsync()
     {
@@ -118,6 +130,7 @@ public sealed class HistoryViewModel : ViewModelBase
         (PrevPageCommand as AsyncRelayCommand)?.RaiseCanExecuteChanged();
         (RemoveFromHistoryCommand as AsyncRelayCommand<Wallpaper?>)?.RaiseCanExecuteChanged();
         (ClearHistoryCommand as AsyncRelayCommand)?.RaiseCanExecuteChanged();
+        _actions.RaiseCanExec();
     }
 
     private async Task RemoveAsync(Wallpaper? w)
