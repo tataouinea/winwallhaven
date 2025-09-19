@@ -81,6 +81,7 @@ public sealed class HistoryViewModel : ViewModelBase
     public ICommand OpenInBrowserCommand => _actions.OpenInBrowserCommand;
     public ICommand SetAsWallpaperCommand => _actions.SetAsWallpaperCommand;
     public ICommand SetAsLockScreenCommand => _actions.SetAsLockScreenCommand;
+    public ICommand SetAsBothCommand => _actions.SetAsBothCommand;
     public ICommand DownloadCommand => _actions.DownloadCommand;
 
     public async Task LoadAsync()

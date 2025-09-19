@@ -167,6 +167,10 @@
                                                     <MenuFlyoutItem Text="Set as Lock Screen" Icon="ProtectedDocument"
                                                                     Command="{Binding DataContext.SetAsLockScreenCommand, ElementName=RootPage}"
                                                                     CommandParameter="{Binding}" />
+                                                    <MenuFlyoutItem Text="Set Both"
+                                                                    Icon="Sync"
+                                                                    Command="{Binding DataContext.SetAsBothCommand, ElementName=RootPage}"
+                                                                    CommandParameter="{Binding}" />
                                                 </MenuFlyout>
                                             </controls:AsyncImage.ContextFlyout>
                                         </controls:AsyncImage>
@@ -274,6 +278,10 @@
                                                                     CommandParameter="{Binding}" />
                                                     <MenuFlyoutItem Text="Set as Lock Screen" Icon="ProtectedDocument"
                                                                     Command="{Binding DataContext.SetAsLockScreenCommand, ElementName=RootPage}"
+                                                                    CommandParameter="{Binding}" />
+                                                    <MenuFlyoutItem Text="Set Both"
+                                                                    Icon="Sync"
+                                                                    Command="{Binding DataContext.SetAsBothCommand, ElementName=RootPage}"
                                                                     CommandParameter="{Binding}" />
                                                     <MenuFlyoutSeparator />
                                                     <MenuFlyoutItem Text="Remove from History" Icon="Delete"

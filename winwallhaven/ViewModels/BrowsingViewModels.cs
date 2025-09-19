@@ -79,6 +79,7 @@ public abstract class BrowsingViewModelBase : ViewModelBase
     public ICommand OpenUserProfileCommand => _actions.OpenUserProfileCommand;
     public ICommand SetAsWallpaperCommand => _actions.SetAsWallpaperCommand;
     public ICommand SetAsLockScreenCommand => _actions.SetAsLockScreenCommand;
+    public ICommand SetAsBothCommand => _actions.SetAsBothCommand;
     public ICommand DownloadCommand => _actions.DownloadCommand;
     public ICommand RemoveFromHistoryCommand => _actions.RemoveFromHistoryCommand;
 

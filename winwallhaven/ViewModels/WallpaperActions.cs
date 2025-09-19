@@ -39,6 +39,7 @@ public sealed class WallpaperActions
         OpenUserProfileCommand = new RelayCommand<Wallpaper?>(OpenUserProfile, w => w?.UserProfileUrl != null);
         SetAsWallpaperCommand = new AsyncRelayCommand<Wallpaper?>(SetAsWallpaperAsync, w => w != null && !_isBusy());
         SetAsLockScreenCommand = new AsyncRelayCommand<Wallpaper?>(SetAsLockScreenAsync, w => w != null && !_isBusy());
+        SetAsBothCommand = new AsyncRelayCommand<Wallpaper?>(SetAsBothAsync, w => w != null && !_isBusy());
         RemoveFromHistoryCommand = new AsyncRelayCommand<Wallpaper?>(RemoveHistoryAsync, w => w != null && !_isBusy());
 #if WINDOWS
 #pragma warning disable CA1416
@@ -53,6 +54,7 @@ public sealed class WallpaperActions
     public ICommand OpenUserProfileCommand { get; }
     public ICommand SetAsWallpaperCommand { get; }
     public ICommand SetAsLockScreenCommand { get; }
+    public ICommand SetAsBothCommand { get; }
     public ICommand DownloadCommand { get; }
     public ICommand RemoveFromHistoryCommand { get; }
 
@@ -62,6 +64,7 @@ public sealed class WallpaperActions
         (OpenUserProfileCommand as RelayCommand<Wallpaper?>)?.RaiseCanExecuteChanged();
         (SetAsWallpaperCommand as AsyncRelayCommand<Wallpaper?>)?.RaiseCanExecuteChanged();
         (SetAsLockScreenCommand as AsyncRelayCommand<Wallpaper?>)?.RaiseCanExecuteChanged();
+        (SetAsBothCommand as AsyncRelayCommand<Wallpaper?>)?.RaiseCanExecuteChanged();
         (DownloadCommand as AsyncRelayCommand<Wallpaper?>)?.RaiseCanExecuteChanged();
         (RemoveFromHistoryCommand as AsyncRelayCommand<Wallpaper?>)?.RaiseCanExecuteChanged();
     }
@@ -134,6 +137,32 @@ public sealed class WallpaperActions
         catch (Exception ex)
         {
             _logger?.LogError(ex, "Failed to set lock screen image for {Id}", w.Id);
+        }
+    }
+
+    private async Task SetAsBothAsync(Wallpaper? w)
+    {
+        if (w == null) return;
+        try
+        {
+            var cache = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
+                "winwallhaven", "cache");
+            Directory.CreateDirectory(cache);
+            var local = await _wallpaperService.DownloadAsync(w, cache);
+            // Apply to desktop wallpaper first, then lock screen using the same file
+            await _wallpaperService.SetDesktopWallpaperAsync(local);
+            await _wallpaperService.SetLockScreenImageAsync(local);
+
+            // Record both actions (last action will be LockScreen)
+            await _historyService.RecordAsync(w, HistoryAction.Wallpaper);
+            await _historyService.RecordAsync(w, HistoryAction.LockScreen);
+
+            // Warn about lock screen limitations
+            _ = LockScreenWarningService.MaybeShowAsync(); // fire & forget
+        }
+        catch (Exception ex)
+        {
+            _logger?.LogError(ex, "Failed to set wallpaper and lock screen for {Id}", w.Id);
         }
     }
 
