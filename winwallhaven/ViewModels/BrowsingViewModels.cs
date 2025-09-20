@@ -159,10 +159,13 @@ public sealed class LatestViewModel : BrowsingViewModelBase
 
     protected override WallpaperSearchQuery BuildQuery(int page)
     {
+        var minW = Filters.MinWidth > 0 ? Filters.MinWidth : null;
+        var minH = Filters.MinHeight > 0 ? Filters.MinHeight : null;
         return new WallpaperSearchQuery("",
             Filters.GetCategoriesParam(),
             Filters.GetPurityParam(),
-            "date_added", "desc", page);
+            "date_added", "desc", page,
+            minW, minH);
     }
 }
 
@@ -175,10 +178,13 @@ public sealed class ToplistViewModel : BrowsingViewModelBase
 
     protected override WallpaperSearchQuery BuildQuery(int page)
     {
+        var minW = Filters.MinWidth > 0 ? Filters.MinWidth : null;
+        var minH = Filters.MinHeight > 0 ? Filters.MinHeight : null;
         return new WallpaperSearchQuery("",
             Filters.GetCategoriesParam(),
             Filters.GetPurityParam(),
-            "toplist", "desc", page);
+            "toplist", "desc", page,
+            minW, minH);
     }
 }
 
@@ -191,9 +197,12 @@ public sealed class RandomViewModel : BrowsingViewModelBase
 
     protected override WallpaperSearchQuery BuildQuery(int page)
     {
+        var minW = Filters.MinWidth > 0 ? Filters.MinWidth : null;
+        var minH = Filters.MinHeight > 0 ? Filters.MinHeight : null;
         return new WallpaperSearchQuery("",
             Filters.GetCategoriesParam(),
             Filters.GetPurityParam(),
-            "random", "desc", page);
+            "random", "desc", page,
+            minW, minH);
     }
 }

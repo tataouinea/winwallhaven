@@ -7,6 +7,8 @@ public sealed class FilterOptions : ViewModelBase
     // Categories (General, Anime, People) -> 3-bit string
     private bool _categoryGeneral = true;
     private bool _categoryPeople = true;
+    private int? _minHeight;
+    private int? _minWidth;
     private bool _purityNsfw;
 
     // Purity (SFW, Sketchy, NSFW) -> 3-bit string
@@ -47,6 +49,25 @@ public sealed class FilterOptions : ViewModelBase
     {
         get => _purityNsfw;
         set => SetProperty(ref _purityNsfw, value);
+    }
+
+    // Minimum resolution (Wallhaven 'atleast' parameter)
+    public int? MinWidth
+    {
+        get => _minWidth;
+        set => SetProperty(ref _minWidth, value);
+    }
+
+    public int? MinHeight
+    {
+        get => _minHeight;
+        set => SetProperty(ref _minHeight, value);
+    }
+
+    public void ClearMinResolution()
+    {
+        _ = SetProperty(ref _minWidth, null, nameof(MinWidth));
+        _ = SetProperty(ref _minHeight, null, nameof(MinHeight));
     }
 
     public string GetCategoriesParam()

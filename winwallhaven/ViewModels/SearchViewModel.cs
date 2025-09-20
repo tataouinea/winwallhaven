@@ -118,11 +118,14 @@ public sealed class SearchViewModel : ViewModelBase
             Results.Clear();
             var sw = Stopwatch.StartNew();
             var sorting = string.IsNullOrWhiteSpace(Query) ? "date_added" : "relevance";
+            var minW = Filters.MinWidth > 0 ? Filters.MinWidth : null;
+            var minH = Filters.MinHeight > 0 ? Filters.MinHeight : null;
             var virtualPage = await _paginator.GetAsync(
                 apiPage => new WallpaperSearchQuery(Query,
                     Filters.GetCategoriesParam(),
                     Filters.GetPurityParam(),
-                    sorting, "desc", apiPage), CurrentPage);
+                    sorting, "desc", apiPage,
+                    minW, minH), CurrentPage);
             CurrentPage = virtualPage.LogicalPage;
             LastPage = virtualPage.LastLogicalPage; // likely null until end detected
             foreach (var w in virtualPage.Items) Results.Add(w);

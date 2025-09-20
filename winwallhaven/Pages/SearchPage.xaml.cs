@@ -6,6 +6,7 @@ using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media.Imaging;
 using winwallhaven.Core.Models;
+using winwallhaven.Services;
 using winwallhaven.ViewModels;
 
 namespace winwallhaven.Pages;
@@ -20,6 +21,17 @@ public sealed partial class SearchPage : Page
 
         // Handle keyboard shortcuts for full-screen preview
         KeyDown += SearchPage_KeyDown;
+    }
+
+    private void MinResolutionFlyout_Opening(object sender, object e)
+    {
+        if (DataContext is not SearchViewModel vm) return;
+        if (vm.Filters.MinWidth == null || vm.Filters.MinHeight == null)
+            if (ScreenResolutionHelper.TryGetCurrentMonitorResolution(out var w, out var h))
+            {
+                vm.Filters.MinWidth = w;
+                vm.Filters.MinHeight = h;
+            }
     }
 
     private void SearchPage_KeyDown(object sender, KeyRoutedEventArgs e)
@@ -133,5 +145,61 @@ public sealed partial class SearchPage : Page
                 // Ignore any exceptions
             }
         });
+    }
+
+    private void UseCurrentScreen_Click(object sender, RoutedEventArgs e)
+    {
+        if (DataContext is not SearchViewModel vm) return;
+        if (ScreenResolutionHelper.TryGetCurrentMonitorResolution(out var w, out var h))
+        {
+            vm.Filters.MinWidth = w;
+            vm.Filters.MinHeight = h;
+            vm.ApplyFiltersCommand?.Execute(null);
+        }
+    }
+
+    private void ClearMinResolution_Click(object sender, RoutedEventArgs e)
+    {
+        if (DataContext is not SearchViewModel vm) return;
+        vm.Filters.ClearMinResolution();
+        vm.ApplyFiltersCommand?.Execute(null);
+    }
+
+    private void PresetResolution_Click(object sender, RoutedEventArgs e)
+    {
+        if (DataContext is not SearchViewModel vm) return;
+        if (sender is Button b && b.Tag is string tag && TryParseRes(tag, out var w, out var h))
+        {
+            vm.Filters.MinWidth = w;
+            vm.Filters.MinHeight = h;
+            vm.ApplyFiltersCommand?.Execute(null);
+        }
+    }
+
+    private void ApplyMinResolution_Click(object sender, RoutedEventArgs e)
+    {
+        if (DataContext is not SearchViewModel vm) return;
+        // Pull values from NumberBoxes (double -> int)
+        try
+        {
+            var w = (int)Math.Max(0, MinWidthBox.Value);
+            var h = (int)Math.Max(0, MinHeightBox.Value);
+            vm.Filters.MinWidth = w > 0 ? w : null;
+            vm.Filters.MinHeight = h > 0 ? h : null;
+        }
+        catch
+        {
+            // ignore invalid inputs
+        }
+
+        vm.ApplyFiltersCommand?.Execute(null);
+    }
+
+    private static bool TryParseRes(string s, out int w, out int h)
+    {
+        w = h = 0;
+        var parts = s.Split('x', '×');
+        if (parts.Length != 2) return false;
+        return int.TryParse(parts[0], out w) && int.TryParse(parts[1], out h);
     }
 }

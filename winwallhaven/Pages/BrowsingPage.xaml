@@ -50,6 +50,37 @@
                         </Flyout>
                     </AppBarButton.Flyout>
                 </AppBarButton>
+                <AppBarButton Icon="Zoom" Label="Min resolution">
+                    <AppBarButton.Flyout>
+                        <Flyout Placement="Bottom" Opening="MinResolutionFlyout_Opening">
+                            <StackPanel Spacing="8" Padding="8">
+                                <TextBlock Text="Pick minimum resolution" FontWeight="SemiBold" />
+                                <StackPanel Orientation="Horizontal" Spacing="6">
+                                    <Button Content="Use current screen" Click="UseCurrentScreen_Click" />
+                                    <Button Content="Clear" Click="ClearMinResolution_Click" />
+                                </StackPanel>
+                                <TextBlock Text="Common" FontWeight="SemiBold" />
+                                <StackPanel Orientation="Horizontal" Spacing="6">
+                                    <Button Content="1920×1080" Click="PresetResolution_Click" Tag="1920x1080" />
+                                    <Button Content="2560×1440" Click="PresetResolution_Click" Tag="2560x1440" />
+                                    <Button Content="3840×2160" Click="PresetResolution_Click" Tag="3840x2160" />
+                                    <Button Content="3440×1440" Click="PresetResolution_Click" Tag="3440x1440" />
+                                </StackPanel>
+                                <TextBlock Text="Custom" FontWeight="SemiBold" />
+                                <StackPanel Orientation="Horizontal" Spacing="6">
+                                    <NumberBox x:Name="MinWidthBox" Minimum="1" PlaceholderText="Width"
+                                               Value="{Binding Filters.MinWidth, Mode=TwoWay, TargetNullValue=0}"
+                                               SmallChange="10" LargeChange="100" />
+                                    <TextBlock Text="×" VerticalAlignment="Center" />
+                                    <NumberBox x:Name="MinHeightBox" Minimum="1" PlaceholderText="Height"
+                                               Value="{Binding Filters.MinHeight, Mode=TwoWay, TargetNullValue=0}"
+                                               SmallChange="10" LargeChange="100" />
+                                    <Button Content="Apply" Click="ApplyMinResolution_Click" />
+                                </StackPanel>
+                            </StackPanel>
+                        </Flyout>
+                    </AppBarButton.Flyout>
+                </AppBarButton>
                 <AppBarButton Icon="Refresh" Label="Refresh" Command="{Binding RefreshCommand}" />
                 <AppBarSeparator />
                 <AppBarButton Icon="Previous" Label="Prev" Command="{Binding PrevPageCommand}" />
