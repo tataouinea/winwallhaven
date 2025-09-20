@@ -35,6 +35,7 @@ public sealed class SearchViewModel : ViewModelBase
         _logger = logger;
         _wallpaperService = wallpaperService;
         SearchCommand = new AsyncRelayCommand(SearchFirstPageAsync, () => !IsLoading);
+        ApplyFiltersCommand = new AsyncRelayCommand(SearchFirstPageAsync, () => !IsLoading);
         NextPageCommand = new AsyncRelayCommand(LoadNextPageAsync, () => !IsLoading && CanLoadNextPage);
         PrevPageCommand = new AsyncRelayCommand(LoadPrevPageAsync, () => !IsLoading && CanLoadPrevPage);
         _actions = new WallpaperActions(wallpaperService, App.Services.GetRequiredService<IHistoryService>(), logger,
@@ -43,6 +44,8 @@ public sealed class SearchViewModel : ViewModelBase
     }
 
     public ObservableCollection<Wallpaper> Results { get; } = new();
+
+    public FilterOptions Filters { get; } = new();
 
     public bool IsLoading
     {
@@ -94,6 +97,7 @@ public sealed class SearchViewModel : ViewModelBase
     public bool CanLoadPrevPage => CurrentPage > 1;
 
     public ICommand SearchCommand { get; }
+    public ICommand ApplyFiltersCommand { get; }
     public ICommand NextPageCommand { get; }
     public ICommand PrevPageCommand { get; }
     public ICommand OpenInBrowserCommand => _actions.OpenInBrowserCommand;
@@ -115,7 +119,10 @@ public sealed class SearchViewModel : ViewModelBase
             var sw = Stopwatch.StartNew();
             var sorting = string.IsNullOrWhiteSpace(Query) ? "date_added" : "relevance";
             var virtualPage = await _paginator.GetAsync(
-                apiPage => new WallpaperSearchQuery(Query, "111", "100", sorting, "desc", apiPage), CurrentPage);
+                apiPage => new WallpaperSearchQuery(Query,
+                    Filters.GetCategoriesParam(),
+                    Filters.GetPurityParam(),
+                    sorting, "desc", apiPage), CurrentPage);
             CurrentPage = virtualPage.LogicalPage;
             LastPage = virtualPage.LastLogicalPage; // likely null until end detected
             foreach (var w in virtualPage.Items) Results.Add(w);
@@ -156,6 +163,7 @@ public sealed class SearchViewModel : ViewModelBase
     private void RaiseCanExec()
     {
         (SearchCommand as AsyncRelayCommand)?.RaiseCanExecuteChanged();
+        (ApplyFiltersCommand as AsyncRelayCommand)?.RaiseCanExecuteChanged();
         (NextPageCommand as AsyncRelayCommand)?.RaiseCanExecuteChanged();
         (PrevPageCommand as AsyncRelayCommand)?.RaiseCanExecuteChanged();
         _actions.RaiseCanExec();

@@ -31,6 +31,7 @@ public abstract class BrowsingViewModelBase : ViewModelBase
         RefreshCommand = new AsyncRelayCommand(LoadFirstPageAsync, () => !IsLoading);
         NextPageCommand = new AsyncRelayCommand(LoadNextPageAsync, () => !IsLoading && CanLoadNextPage);
         PrevPageCommand = new AsyncRelayCommand(LoadPrevPageAsync, () => !IsLoading && CanLoadPrevPage);
+        ApplyFiltersCommand = new AsyncRelayCommand(LoadFirstPageAsync, () => !IsLoading);
         _wallpaperService = wallpaperService;
         _actions = new WallpaperActions(wallpaperService, App.Services.GetRequiredService<IHistoryService>(), logger,
             () => IsLoading);
@@ -38,6 +39,8 @@ public abstract class BrowsingViewModelBase : ViewModelBase
     }
 
     public ObservableCollection<Wallpaper> Results { get; } = new();
+
+    public FilterOptions Filters { get; } = new();
 
     public int CurrentPage
     {
@@ -75,6 +78,7 @@ public abstract class BrowsingViewModelBase : ViewModelBase
     public ICommand RefreshCommand { get; }
     public ICommand NextPageCommand { get; }
     public ICommand PrevPageCommand { get; }
+    public ICommand ApplyFiltersCommand { get; }
     public ICommand OpenInBrowserCommand => _actions.OpenInBrowserCommand;
     public ICommand OpenUserProfileCommand => _actions.OpenUserProfileCommand;
     public ICommand SetAsWallpaperCommand => _actions.SetAsWallpaperCommand;
@@ -141,6 +145,7 @@ public abstract class BrowsingViewModelBase : ViewModelBase
         (RefreshCommand as AsyncRelayCommand)?.RaiseCanExecuteChanged();
         (NextPageCommand as AsyncRelayCommand)?.RaiseCanExecuteChanged();
         (PrevPageCommand as AsyncRelayCommand)?.RaiseCanExecuteChanged();
+        (ApplyFiltersCommand as AsyncRelayCommand)?.RaiseCanExecuteChanged();
         _actions.RaiseCanExec();
     }
 }
@@ -154,7 +159,10 @@ public sealed class LatestViewModel : BrowsingViewModelBase
 
     protected override WallpaperSearchQuery BuildQuery(int page)
     {
-        return new WallpaperSearchQuery("", "111", "100", "date_added", "desc", page);
+        return new WallpaperSearchQuery("",
+            Filters.GetCategoriesParam(),
+            Filters.GetPurityParam(),
+            "date_added", "desc", page);
     }
 }
 
@@ -167,7 +175,10 @@ public sealed class ToplistViewModel : BrowsingViewModelBase
 
     protected override WallpaperSearchQuery BuildQuery(int page)
     {
-        return new WallpaperSearchQuery("", "111", "100", "toplist", "desc", page);
+        return new WallpaperSearchQuery("",
+            Filters.GetCategoriesParam(),
+            Filters.GetPurityParam(),
+            "toplist", "desc", page);
     }
 }
 
@@ -180,6 +191,9 @@ public sealed class RandomViewModel : BrowsingViewModelBase
 
     protected override WallpaperSearchQuery BuildQuery(int page)
     {
-        return new WallpaperSearchQuery("", "111", "100", "random", "desc", page);
+        return new WallpaperSearchQuery("",
+            Filters.GetCategoriesParam(),
+            Filters.GetPurityParam(),
+            "random", "desc", page);
     }
 }

@@ -25,6 +25,31 @@
                 </StackPanel>
             </CommandBar.Content>
             <CommandBar.PrimaryCommands>
+                <AppBarButton Icon="Filter" Label="Filters">
+                    <AppBarButton.Flyout>
+                        <Flyout Placement="Bottom">
+                            <StackPanel Spacing="6" Padding="8">
+                                <TextBlock Text="Categories" FontWeight="SemiBold" Margin="0,0,0,4" />
+                                <StackPanel>
+                                    <CheckBox Content="General"
+                                              IsChecked="{Binding Filters.CategoryGeneral, Mode=TwoWay}" />
+                                    <CheckBox Content="Anime" IsChecked="{Binding Filters.CategoryAnime, Mode=TwoWay}" />
+                                    <CheckBox Content="People"
+                                              IsChecked="{Binding Filters.CategoryPeople, Mode=TwoWay}" />
+                                </StackPanel>
+                                <TextBlock Text="Purity" FontWeight="SemiBold" Margin="0,8,0,4" />
+                                <StackPanel>
+                                    <CheckBox Content="SFW" IsChecked="{Binding Filters.PuritySfw, Mode=TwoWay}" />
+                                    <CheckBox Content="Sketchy"
+                                              IsChecked="{Binding Filters.PuritySketchy, Mode=TwoWay}" />
+                                    <CheckBox Content="NSFW" IsChecked="{Binding Filters.PurityNsfw, Mode=TwoWay}" />
+                                </StackPanel>
+                                <Button Content="Apply" HorizontalAlignment="Right" Margin="0,8,0,0"
+                                        Command="{Binding ApplyFiltersCommand}" />
+                            </StackPanel>
+                        </Flyout>
+                    </AppBarButton.Flyout>
+                </AppBarButton>
                 <AppBarButton Icon="Refresh" Label="Refresh" Command="{Binding RefreshCommand}" />
                 <AppBarSeparator />
                 <AppBarButton Icon="Previous" Label="Prev" Command="{Binding PrevPageCommand}" />
