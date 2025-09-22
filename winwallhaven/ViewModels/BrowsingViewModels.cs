@@ -91,6 +91,8 @@ public abstract class BrowsingViewModelBase : ViewModelBase
 
     public async Task LoadAsync()
     {
+        // Prevent re-entrant loads (e.g., during rapid navigation or initial selection churn)
+        if (IsLoading) return;
         if (Results.Count == 0)
             await LoadFirstPageAsync();
     }

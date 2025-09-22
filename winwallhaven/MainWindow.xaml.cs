@@ -18,7 +18,6 @@ public sealed partial class MainWindow : Window
     public MainWindow()
     {
         InitializeComponent();
-        RootFrame.Navigate(typeof(BrowsingPage), typeof(LatestViewModel));
     }
 
     private void NavView_OnLoaded(object sender, RoutedEventArgs e)
