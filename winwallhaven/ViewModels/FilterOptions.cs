@@ -9,11 +9,9 @@ public sealed class FilterOptions : ViewModelBase
     private bool _categoryPeople;
     private int? _minHeight;
     private int? _minWidth;
-    private bool _purityNsfw;
 
-    // Purity (SFW, Sketchy, NSFW) -> 3-bit string
+    // Purity (SFW-only for Microsoft Store compliance)
     private bool _puritySfw = true;
-    private bool _puritySketchy;
 
     public bool CategoryGeneral
     {
@@ -37,18 +35,6 @@ public sealed class FilterOptions : ViewModelBase
     {
         get => _puritySfw;
         set => SetProperty(ref _puritySfw, value);
-    }
-
-    public bool PuritySketchy
-    {
-        get => _puritySketchy;
-        set => SetProperty(ref _puritySketchy, value);
-    }
-
-    public bool PurityNsfw
-    {
-        get => _purityNsfw;
-        set => SetProperty(ref _purityNsfw, value);
     }
 
     // Minimum resolution (Wallhaven 'atleast' parameter)
@@ -79,7 +65,8 @@ public sealed class FilterOptions : ViewModelBase
     public string GetPurityParam()
     {
         // API expects a 3-char bitstring: SFW, Sketchy, NSFW
-        return BoolToChar(PuritySfw).ToString() + BoolToChar(PuritySketchy) + BoolToChar(PurityNsfw);
+        // For Store submission, enforce SFW-only regardless of UI state.
+        return "100";
     }
 
     private static char BoolToChar(bool v)

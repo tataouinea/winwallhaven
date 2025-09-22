@@ -38,7 +38,9 @@ public sealed class WallhavenApiClient : IWallhavenApiClient
 
         Add("q", query.Query);
         Add("categories", query.Categories);
-        Add("purity", query.Purity);
+        // Enforce SFW-only for Microsoft Store compliance regardless of incoming value
+        var purityParam = "100";
+        Add("purity", purityParam);
         Add("sorting", query.Sorting);
         Add("order", query.Order);
         Add("page", query.Page?.ToString());
@@ -54,7 +56,7 @@ public sealed class WallhavenApiClient : IWallhavenApiClient
         Add("ai_art_filter", query.AiArtFilter);
         var url = "search" + (qp.Count > 0 ? "?" + string.Join('&', qp) : string.Empty);
         _logger.LogDebug("Issuing search request: {Url} Query={Query} Categories={Categories} Purity={Purity}", url,
-            query.Query, query.Categories, query.Purity);
+            query.Query, query.Categories, purityParam);
         using var resp = await _http.GetAsync(url, ct);
         if (!resp.IsSuccessStatusCode)
         {

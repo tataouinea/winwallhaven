@@ -34,10 +34,8 @@
                                 </StackPanel>
                                 <TextBlock Text="Purity" FontWeight="SemiBold" Margin="0,8,0,4" />
                                 <StackPanel>
-                                    <CheckBox Content="SFW" IsChecked="{Binding Filters.PuritySfw, Mode=TwoWay}" />
-                                    <CheckBox Content="Sketchy"
-                                              IsChecked="{Binding Filters.PuritySketchy, Mode=TwoWay}" />
-                                    <CheckBox Content="NSFW" IsChecked="{Binding Filters.PurityNsfw, Mode=TwoWay}" />
+                                    <CheckBox Content="SFW" IsChecked="{Binding Filters.PuritySfw, Mode=TwoWay}"
+                                              IsEnabled="False" />
                                 </StackPanel>
                                 <Button Content="Apply" HorizontalAlignment="Right" Margin="0,8,0,0"
                                         Command="{Binding ApplyFiltersCommand}" />
