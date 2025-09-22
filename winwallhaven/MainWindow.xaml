@@ -30,12 +30,12 @@
                 <ColumnDefinition Width="Auto" />
             </Grid.ColumnDefinitions>
 
-            <!-- App title (left) -->
-            <TextBlock Grid.Column="0"
-                       Text="winwallhaven"
-                       Margin="12,0"
-                       VerticalAlignment="Center"
-                       Opacity="0.7" />
+            <!-- App logo + title (left) -->
+            <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center" Margin="12,0,12,0">
+                <Image Source="ms-appx:///Assets/Square44x44Logo.png"
+                       Width="24" Height="24" Stretch="Uniform" Margin="0,0,8,0" />
+                <TextBlock Text="winwallhaven" VerticalAlignment="Center" Opacity="0.7" />
+            </StackPanel>
 
             <!-- Center search box shown only on the Search page -->
             <Grid x:Name="TitleSearchHost"
