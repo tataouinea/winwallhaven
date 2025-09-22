@@ -17,12 +17,7 @@
 
         <CommandBar DefaultLabelPosition="Right">
             <CommandBar.Content>
-                <StackPanel Orientation="Horizontal" Spacing="8">
-                    <TextBlock VerticalAlignment="Center" Text="Page:" />
-                    <TextBlock VerticalAlignment="Center" Text="{Binding CurrentPage}" />
-                    <TextBlock VerticalAlignment="Center" Text="/" />
-                    <TextBlock VerticalAlignment="Center" Text="{Binding LastPage}" />
-                </StackPanel>
+                <StackPanel Orientation="Horizontal" Spacing="8" />
             </CommandBar.Content>
             <CommandBar.PrimaryCommands>
                 <AppBarButton Icon="Filter" Label="Filters">
@@ -83,7 +78,18 @@
                 </AppBarButton>
                 <AppBarButton Icon="Refresh" Label="Refresh" Command="{Binding RefreshCommand}" />
                 <AppBarSeparator />
+                <AppBarButton Label="First" Command="{Binding FirstPageCommand}">
+                    <AppBarButton.Icon>
+                        <PathIcon Data="M6,4 L6,28 9,28 9,4 Z M12,16 L28,4 28,28 Z" />
+                    </AppBarButton.Icon>
+                </AppBarButton>
                 <AppBarButton Icon="Previous" Label="Prev" Command="{Binding PrevPageCommand}" />
+                <AppBarElementContainer VerticalAlignment="Center">
+                    <Grid Height="40" Margin="8,0">
+                        <TextBlock Text="{Binding CurrentPage}"
+                                   VerticalAlignment="Center" HorizontalAlignment="Center" />
+                    </Grid>
+                </AppBarElementContainer>
                 <AppBarButton Icon="Next" Label="Next" Command="{Binding NextPageCommand}" />
             </CommandBar.PrimaryCommands>
         </CommandBar>

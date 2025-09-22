@@ -29,6 +29,7 @@ public abstract class BrowsingViewModelBase : ViewModelBase
         Api = api;
         Logger = logger;
         RefreshCommand = new AsyncRelayCommand(LoadFirstPageAsync, () => !IsLoading);
+        FirstPageCommand = new AsyncRelayCommand(LoadFirstPageAsync, () => !IsLoading && CanLoadPrevPage);
         NextPageCommand = new AsyncRelayCommand(LoadNextPageAsync, () => !IsLoading && CanLoadNextPage);
         PrevPageCommand = new AsyncRelayCommand(LoadPrevPageAsync, () => !IsLoading && CanLoadPrevPage);
         ApplyFiltersCommand = new AsyncRelayCommand(LoadFirstPageAsync, () => !IsLoading);
@@ -76,6 +77,7 @@ public abstract class BrowsingViewModelBase : ViewModelBase
     public bool CanLoadPrevPage => CurrentPage > 1;
 
     public ICommand RefreshCommand { get; }
+    public ICommand FirstPageCommand { get; }
     public ICommand NextPageCommand { get; }
     public ICommand PrevPageCommand { get; }
     public ICommand ApplyFiltersCommand { get; }
@@ -106,18 +108,18 @@ public abstract class BrowsingViewModelBase : ViewModelBase
     private Task LoadNextPageAsync()
     {
         if (!CanLoadNextPage) return Task.CompletedTask;
-        CurrentPage++;
-        return LoadPageAsync();
+        var target = CurrentPage + 1;
+        return LoadTargetPageAsync(target);
     }
 
     private Task LoadPrevPageAsync()
     {
         if (!CanLoadPrevPage) return Task.CompletedTask;
-        CurrentPage--;
-        return LoadPageAsync();
+        var target = CurrentPage - 1;
+        return LoadTargetPageAsync(target);
     }
 
-    private async Task LoadPageAsync()
+    private async Task<bool> LoadPageAsync()
     {
         IsLoading = true;
         try
@@ -131,10 +133,12 @@ public abstract class BrowsingViewModelBase : ViewModelBase
             sw.Stop();
             (Logger as ILogger<BrowsingViewModelBase>)?.LogInformation("Loaded {Count} results in {Ms}ms",
                 Results.Count, sw.ElapsedMilliseconds);
+            return true;
         }
         catch (Exception ex)
         {
             Logger?.LogError(ex, "Failed to load page");
+            return false;
         }
         finally
         {
@@ -142,9 +146,23 @@ public abstract class BrowsingViewModelBase : ViewModelBase
         }
     }
 
+    private async Task LoadTargetPageAsync(int target)
+    {
+        var previous = CurrentPage;
+        CurrentPage = target;
+        var success = await LoadPageAsync();
+
+        if (!success)
+        {
+            CurrentPage = previous;
+            await LoadPageAsync();
+        }
+    }
+
     private void RaiseCanExec()
     {
         (RefreshCommand as AsyncRelayCommand)?.RaiseCanExecuteChanged();
+        (FirstPageCommand as AsyncRelayCommand)?.RaiseCanExecuteChanged();
         (NextPageCommand as AsyncRelayCommand)?.RaiseCanExecuteChanged();
         (PrevPageCommand as AsyncRelayCommand)?.RaiseCanExecuteChanged();
         (ApplyFiltersCommand as AsyncRelayCommand)?.RaiseCanExecuteChanged();

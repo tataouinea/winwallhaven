@@ -28,16 +28,27 @@ public sealed class VirtualWallpaperPaginator
         var firstApiPage = (logicalPage - 1) * pagesPerLogical + 1;
         var aggregate = new List<Wallpaper>(_logicalPageSize);
         int? lastApiPage = null;
+        var failures = 0;
+        var successes = 0;
         for (var i = 0; i < pagesPerLogical; i++)
         {
             var apiPage = firstApiPage + i;
             var q = queryFactory(apiPage);
-            var result = await _api.SearchAsync(q, ct);
-            aggregate.AddRange(result.Items);
-            lastApiPage = result.LastPage; // use meta from final call; they should be same anyway
-            if (result.LastPage.HasValue && apiPage >= result.LastPage.Value)
-                // Reached the real end; stop early.
-                break;
+            try
+            {
+                var result = await _api.SearchAsync(q, ct);
+                aggregate.AddRange(result.Items);
+                successes++;
+                lastApiPage = result.LastPage; // use meta from final call; they should be same anyway
+                if (result.LastPage.HasValue && apiPage >= result.LastPage.Value)
+                    // Reached the real end; stop early.
+                    break;
+            }
+            catch
+            {
+                failures++;
+                // swallow and continue; if all fail we'll surface failure below
+            }
         }
 
         // Compute virtual last page from total if available.
@@ -47,6 +58,11 @@ public sealed class VirtualWallpaperPaginator
             // If API gives total per-page not exposed; we approximate.
             // Without total we keep null so navigation can continue until an empty fetch triggers stop.
         }
+
+        if (successes == 0 || aggregate.Count == 0)
+            // All API calls failed or no items were retrieved for this logical page.
+            // Signal failure so callers can revert to the previous logical page.
+            throw new InvalidOperationException("Failed to retrieve items for the requested page.");
 
         return new VirtualWallpaperPage(aggregate, logicalPage, virtualLast, _logicalPageSize);
     }

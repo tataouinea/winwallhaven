@@ -29,6 +29,7 @@ public sealed class HistoryViewModel : ViewModelBase
         _actions = new WallpaperActions(App.Services.GetRequiredService<IWallpaperService>(), history, logger,
             () => IsLoading);
         RefreshCommand = new AsyncRelayCommand(LoadAsync, () => !IsLoading);
+        FirstPageCommand = new AsyncRelayCommand(LoadFirstPageAsync, () => !IsLoading && CanLoadPrevPage);
         NextPageCommand = new AsyncRelayCommand(LoadNextPageAsync, () => !IsLoading && CanLoadNextPage);
         PrevPageCommand = new AsyncRelayCommand(LoadPrevPageAsync, () => !IsLoading && CanLoadPrevPage);
         RemoveFromHistoryCommand = new AsyncRelayCommand<Wallpaper?>(RemoveAsync, w => w != null && !IsLoading);
@@ -71,6 +72,7 @@ public sealed class HistoryViewModel : ViewModelBase
     public bool CanLoadPrevPage => CurrentPage > 1;
 
     public ICommand RefreshCommand { get; }
+    public ICommand FirstPageCommand { get; }
     public ICommand NextPageCommand { get; }
     public ICommand PrevPageCommand { get; }
     public ICommand RemoveFromHistoryCommand { get; }
@@ -110,11 +112,20 @@ public sealed class HistoryViewModel : ViewModelBase
         }
     }
 
+    private Task LoadFirstPageAsync()
+    {
+        if (!CanLoadPrevPage && CurrentPage == 1) return Task.CompletedTask;
+        CurrentPage = 1;
+        return LoadAsync();
+    }
+
     private async Task LoadNextPageAsync()
     {
         if (!CanLoadNextPage) return;
+        var prev = CurrentPage;
         CurrentPage++;
         await LoadAsync();
+        // History load doesn't call network; assume success.
     }
 
     private async Task LoadPrevPageAsync()
@@ -127,6 +138,7 @@ public sealed class HistoryViewModel : ViewModelBase
     private void RaiseCanExec()
     {
         (RefreshCommand as AsyncRelayCommand)?.RaiseCanExecuteChanged();
+        (FirstPageCommand as AsyncRelayCommand)?.RaiseCanExecuteChanged();
         (NextPageCommand as AsyncRelayCommand)?.RaiseCanExecuteChanged();
         (PrevPageCommand as AsyncRelayCommand)?.RaiseCanExecuteChanged();
         (RemoveFromHistoryCommand as AsyncRelayCommand<Wallpaper?>)?.RaiseCanExecuteChanged();

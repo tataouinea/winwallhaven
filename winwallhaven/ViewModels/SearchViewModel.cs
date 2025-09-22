@@ -36,6 +36,7 @@ public sealed class SearchViewModel : ViewModelBase
         _wallpaperService = wallpaperService;
         SearchCommand = new AsyncRelayCommand(SearchFirstPageAsync, () => !IsLoading);
         ApplyFiltersCommand = new AsyncRelayCommand(SearchFirstPageAsync, () => !IsLoading);
+        FirstPageCommand = new AsyncRelayCommand(LoadFirstPageAsync, () => !IsLoading && CanLoadPrevPage);
         NextPageCommand = new AsyncRelayCommand(LoadNextPageAsync, () => !IsLoading && CanLoadNextPage);
         PrevPageCommand = new AsyncRelayCommand(LoadPrevPageAsync, () => !IsLoading && CanLoadPrevPage);
         _actions = new WallpaperActions(wallpaperService, App.Services.GetRequiredService<IHistoryService>(), logger,
@@ -98,6 +99,7 @@ public sealed class SearchViewModel : ViewModelBase
 
     public ICommand SearchCommand { get; }
     public ICommand ApplyFiltersCommand { get; }
+    public ICommand FirstPageCommand { get; }
     public ICommand NextPageCommand { get; }
     public ICommand PrevPageCommand { get; }
     public ICommand OpenInBrowserCommand => _actions.OpenInBrowserCommand;
@@ -110,7 +112,7 @@ public sealed class SearchViewModel : ViewModelBase
 
     private Window AppWindow => App.MainAppWindow!;
 
-    private async Task LoadPageAsync()
+    private async Task<bool> LoadPageAsync()
     {
         IsLoading = true;
         try
@@ -132,10 +134,12 @@ public sealed class SearchViewModel : ViewModelBase
             sw.Stop();
             _logger?.LogInformation("Loaded logical page {Page} with {Count} results in {Ms}ms", CurrentPage,
                 Results.Count, sw.ElapsedMilliseconds);
+            return true;
         }
         catch (Exception ex)
         {
             _logger?.LogError(ex, "Failed to load page");
+            return false;
         }
         finally
         {
@@ -143,30 +147,50 @@ public sealed class SearchViewModel : ViewModelBase
         }
     }
 
-    private Task SearchFirstPageAsync()
+    private async Task SearchFirstPageAsync()
     {
         CurrentPage = 1;
-        return LoadPageAsync();
+        await LoadPageAsync();
+    }
+
+    private Task LoadFirstPageAsync()
+    {
+        if (!CanLoadPrevPage && CurrentPage == 1) return Task.CompletedTask;
+        var target = 1;
+        return LoadTargetPageAsync(target);
     }
 
     private Task LoadNextPageAsync()
     {
         if (!CanLoadNextPage) return Task.CompletedTask;
-        CurrentPage++;
-        return LoadPageAsync();
+        var target = CurrentPage + 1;
+        return LoadTargetPageAsync(target);
     }
 
     private Task LoadPrevPageAsync()
     {
         if (!CanLoadPrevPage) return Task.CompletedTask;
-        CurrentPage--;
-        return LoadPageAsync();
+        var target = CurrentPage - 1;
+        return LoadTargetPageAsync(target);
+    }
+
+    private async Task LoadTargetPageAsync(int targetPage)
+    {
+        var previous = CurrentPage;
+        CurrentPage = targetPage;
+        var ok = await LoadPageAsync();
+        if (!ok)
+        {
+            CurrentPage = previous; // revert if failed
+            await LoadPageAsync(); // ensure UI shows previous page again
+        }
     }
 
     private void RaiseCanExec()
     {
         (SearchCommand as AsyncRelayCommand)?.RaiseCanExecuteChanged();
         (ApplyFiltersCommand as AsyncRelayCommand)?.RaiseCanExecuteChanged();
+        (FirstPageCommand as AsyncRelayCommand)?.RaiseCanExecuteChanged();
         (NextPageCommand as AsyncRelayCommand)?.RaiseCanExecuteChanged();
         (PrevPageCommand as AsyncRelayCommand)?.RaiseCanExecuteChanged();
         _actions.RaiseCanExec();
