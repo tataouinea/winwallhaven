@@ -32,7 +32,7 @@
                                 <TextBlock Text="Purity" FontWeight="SemiBold" Margin="0,8,0,4" />
                                 <StackPanel>
                                     <CheckBox Content="SFW" IsChecked="{Binding Filters.PuritySfw, Mode=TwoWay}"
-                                              IsEnabled="False"/>
+                                              IsEnabled="False" />
                                 </StackPanel>
                                 <Button Content="Apply" HorizontalAlignment="Right" Margin="0,8,0,0"
                                         Command="{Binding ApplyFiltersCommand}" />

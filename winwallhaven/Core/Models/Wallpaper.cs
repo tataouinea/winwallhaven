@@ -1,3 +1,5 @@
+using System;
+
 namespace winwallhaven.Core.Models;
 
 public sealed class Wallpaper

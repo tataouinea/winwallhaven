@@ -50,6 +50,7 @@
         <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="9.0.8"/>
         <PackageReference Include="Microsoft.Extensions.Http" Version="9.0.8"/>
         <PackageReference Include="Microsoft.Extensions.Logging" Version="9.0.8"/>
+        <PackageReference Include="Newtonsoft.Json" Version="13.0.3"/>
         <PackageReference Include="Serilog" Version="4.3.0"/>
         <PackageReference Include="Serilog.Extensions.Logging" Version="9.0.2"/>
         <PackageReference Include="Serilog.Sinks.Console" Version="6.0.0"/>
@@ -57,9 +58,7 @@
         <PackageReference Include="Serilog.Sinks.Debug" Version="3.0.0"/>
     </ItemGroup>
 
-    <ItemGroup>
-        <ProjectReference Include="..\winwallhaven.Core\winwallhaven.Core.csproj"/>
-    </ItemGroup>
+    <!-- Core project merged into main; removed ProjectReference -->
 
     <!--
       Defining the "HasPackageAndPublishMenuAddedByProject" property here allows the Solution

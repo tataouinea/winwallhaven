@@ -5,8 +5,6 @@ VisualStudioVersion = 17.14.36414.22 d17.14
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "winwallhaven", "winwallhaven\winwallhaven.csproj", "{2AD7F554-4889-44C9-B5CF-0A2701BFFFDD}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "winwallhaven.Core", "winwallhaven.Core\winwallhaven.Core.csproj", "{3E2B2D79-3F0B-4D3E-8F3E-7A3E8D2E67B2}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|ARM64 = Debug|ARM64
@@ -35,18 +33,6 @@ Global
 		{2AD7F554-4889-44C9-B5CF-0A2701BFFFDD}.Release|x86.ActiveCfg = Release|x86
 		{2AD7F554-4889-44C9-B5CF-0A2701BFFFDD}.Release|x86.Build.0 = Release|x86
 		{2AD7F554-4889-44C9-B5CF-0A2701BFFFDD}.Release|x86.Deploy.0 = Release|x86
-		{3E2B2D79-3F0B-4D3E-8F3E-7A3E8D2E67B2}.Debug|ARM64.ActiveCfg = Debug|Any CPU
-		{3E2B2D79-3F0B-4D3E-8F3E-7A3E8D2E67B2}.Debug|ARM64.Build.0 = Debug|Any CPU
-		{3E2B2D79-3F0B-4D3E-8F3E-7A3E8D2E67B2}.Debug|x64.ActiveCfg = Debug|Any CPU
-		{3E2B2D79-3F0B-4D3E-8F3E-7A3E8D2E67B2}.Debug|x64.Build.0 = Debug|Any CPU
-		{3E2B2D79-3F0B-4D3E-8F3E-7A3E8D2E67B2}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{3E2B2D79-3F0B-4D3E-8F3E-7A3E8D2E67B2}.Debug|x86.Build.0 = Debug|Any CPU
-		{3E2B2D79-3F0B-4D3E-8F3E-7A3E8D2E67B2}.Release|ARM64.ActiveCfg = Release|Any CPU
-		{3E2B2D79-3F0B-4D3E-8F3E-7A3E8D2E67B2}.Release|ARM64.Build.0 = Release|Any CPU
-		{3E2B2D79-3F0B-4D3E-8F3E-7A3E8D2E67B2}.Release|x64.ActiveCfg = Release|Any CPU
-		{3E2B2D79-3F0B-4D3E-8F3E-7A3E8D2E67B2}.Release|x64.Build.0 = Release|Any CPU
-		{3E2B2D79-3F0B-4D3E-8F3E-7A3E8D2E67B2}.Release|x86.ActiveCfg = Release|Any CPU
-		{3E2B2D79-3F0B-4D3E-8F3E-7A3E8D2E67B2}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

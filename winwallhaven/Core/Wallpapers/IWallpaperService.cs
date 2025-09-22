@@ -1,3 +1,5 @@
+using System.Threading;
+using System.Threading.Tasks;
 using winwallhaven.Core.Models;
 
 namespace winwallhaven.Core.Wallpapers;
