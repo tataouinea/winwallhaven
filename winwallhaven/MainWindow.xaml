@@ -13,59 +13,76 @@
         <MicaBackdrop />
     </Window.SystemBackdrop>
 
-    <NavigationView x:Name="NavView"
-                    IsBackButtonVisible="Collapsed"
-                    IsSettingsVisible="True"
-                    PaneDisplayMode="LeftCompact"
-                    SelectionChanged="NavView_OnSelectionChanged"
-                    Loaded="NavView_OnLoaded">
-        <NavigationView.MenuItems>
-            <NavigationViewItem x:Name="LatestItem" Content="Latest" Tag="Latest" Foreground="#ad3">
-                <NavigationViewItem.Icon>
-                    <SymbolIcon Symbol="Clock" />
-                </NavigationViewItem.Icon>
-            </NavigationViewItem>
-            <NavigationViewItem x:Name="ToplistItem" Content="Toplist" Tag="Toplist" Foreground="#b760f0">
-                <NavigationViewItem.Icon>
-                    <SymbolIcon Symbol="Favorite" />
-                </NavigationViewItem.Icon>
-            </NavigationViewItem>
-            <NavigationViewItem x:Name="RandomItem" Content="Random" Tag="Random" Foreground="#e73">
-                <NavigationViewItem.Icon>
-                    <SymbolIcon Symbol="Sync" />
-                </NavigationViewItem.Icon>
-            </NavigationViewItem>
-            <NavigationViewItem x:Name="HistoryItem" Content="History" Tag="History" Foreground="#6ab">
-                <NavigationViewItem.Icon>
-                    <!-- Using MDL2 font glyph for a clock/history-like icon -->
-                    <FontIcon Glyph="&#xE81C;" />
-                </NavigationViewItem.Icon>
-            </NavigationViewItem>
-            <NavigationViewItem x:Name="SearchItem" Content="Search" Tag="Search">
-                <NavigationViewItem.Icon>
-                    <SymbolIcon Symbol="Find" />
-                </NavigationViewItem.Icon>
-            </NavigationViewItem>
-        </NavigationView.MenuItems>
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
 
-        <NavigationView.FooterMenuItems>
-            <NavigationViewItem x:Name="AboutItem" Content="About" Tag="About">
-                <NavigationViewItem.Icon>
-                    <SymbolIcon Symbol="Help" />
-                </NavigationViewItem.Icon>
-            </NavigationViewItem>
-            <NavigationViewItem x:Name="ReportBugItem" Content="Report a bug" Tag="ReportBug">
-                <NavigationViewItem.Icon>
-                    <SymbolIcon Symbol="Important" />
-                </NavigationViewItem.Icon>
-            </NavigationViewItem>
-            <NavigationViewItem x:Name="FeedbackItem" Content="Feedback" Tag="Feedback">
-                <NavigationViewItem.Icon>
-                    <SymbolIcon Symbol="Like" />
-                </NavigationViewItem.Icon>
-            </NavigationViewItem>
-        </NavigationView.FooterMenuItems>
+        <!-- Custom title bar surface; height is controlled by code via PreferredHeightOption. -->
+        <Grid x:Name="AppTitleBar"
+              Grid.Row="0"
+              Height="56"
+              Background="Transparent">
+            <!-- Optional: place app title or controls here later -->
+            <TextBlock Text="winwallhaven" Margin="12,0" VerticalAlignment="Center" Opacity="0.7" />
+        </Grid>
 
-        <Frame x:Name="RootFrame" />
-    </NavigationView>
+        <NavigationView x:Name="NavView"
+                        Grid.Row="1"
+                        IsBackButtonVisible="Collapsed"
+                        IsSettingsVisible="True"
+                        PaneDisplayMode="LeftCompact"
+                        SelectionChanged="NavView_OnSelectionChanged"
+                        Loaded="NavView_OnLoaded">
+            <NavigationView.MenuItems>
+                <NavigationViewItem x:Name="LatestItem" Content="Latest" Tag="Latest" Foreground="#ad3">
+                    <NavigationViewItem.Icon>
+                        <SymbolIcon Symbol="Clock" />
+                    </NavigationViewItem.Icon>
+                </NavigationViewItem>
+                <NavigationViewItem x:Name="ToplistItem" Content="Toplist" Tag="Toplist" Foreground="#b760f0">
+                    <NavigationViewItem.Icon>
+                        <SymbolIcon Symbol="Favorite" />
+                    </NavigationViewItem.Icon>
+                </NavigationViewItem>
+                <NavigationViewItem x:Name="RandomItem" Content="Random" Tag="Random" Foreground="#e73">
+                    <NavigationViewItem.Icon>
+                        <SymbolIcon Symbol="Sync" />
+                    </NavigationViewItem.Icon>
+                </NavigationViewItem>
+                <NavigationViewItem x:Name="HistoryItem" Content="History" Tag="History" Foreground="#6ab">
+                    <NavigationViewItem.Icon>
+                        <!-- Using MDL2 font glyph for a clock/history-like icon -->
+                        <FontIcon Glyph="&#xE81C;" />
+                    </NavigationViewItem.Icon>
+                </NavigationViewItem>
+                <NavigationViewItem x:Name="SearchItem" Content="Search" Tag="Search">
+                    <NavigationViewItem.Icon>
+                        <SymbolIcon Symbol="Find" />
+                    </NavigationViewItem.Icon>
+                </NavigationViewItem>
+            </NavigationView.MenuItems>
+
+            <NavigationView.FooterMenuItems>
+                <NavigationViewItem x:Name="AboutItem" Content="About" Tag="About">
+                    <NavigationViewItem.Icon>
+                        <SymbolIcon Symbol="Help" />
+                    </NavigationViewItem.Icon>
+                </NavigationViewItem>
+                <NavigationViewItem x:Name="ReportBugItem" Content="Report a bug" Tag="ReportBug">
+                    <NavigationViewItem.Icon>
+                        <SymbolIcon Symbol="Important" />
+                    </NavigationViewItem.Icon>
+                </NavigationViewItem>
+                <NavigationViewItem x:Name="FeedbackItem" Content="Feedback" Tag="Feedback">
+                    <NavigationViewItem.Icon>
+                        <SymbolIcon Symbol="Like" />
+                    </NavigationViewItem.Icon>
+                </NavigationViewItem>
+            </NavigationView.FooterMenuItems>
+
+            <Frame x:Name="RootFrame" />
+        </NavigationView>
+    </Grid>
 </Window>

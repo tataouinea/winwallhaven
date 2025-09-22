@@ -1,7 +1,10 @@
 using System;
 using System.Diagnostics;
+using Microsoft.UI;
+using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using WinRT.Interop;
 using winwallhaven.Pages;
 using winwallhaven.ViewModels;
 
@@ -18,6 +21,8 @@ public sealed partial class MainWindow : Window
     public MainWindow()
     {
         InitializeComponent();
+
+        TryEnableTallTitleBar();
     }
 
     private void NavView_OnLoaded(object sender, RoutedEventArgs e)
@@ -77,6 +82,31 @@ public sealed partial class MainWindow : Window
         catch (Exception)
         {
             // ignored
+        }
+    }
+
+    private void TryEnableTallTitleBar()
+    {
+        try
+        {
+            // Get the AppWindow for this Window and opt into the tall system title bar when available.
+            var hwnd = WindowNative.GetWindowHandle(this);
+            var windowId = Win32Interop.GetWindowIdFromWindow(hwnd);
+            var appWindow = AppWindow.GetFromWindowId(windowId);
+
+            if (appWindow != null)
+            {
+                // Extend content into title bar and request the tall system title bar height.
+                appWindow.TitleBar.ExtendsContentIntoTitleBar = true;
+                appWindow.TitleBar.PreferredHeightOption = TitleBarHeightOption.Tall;
+
+                // Let the Window manage hit-testing for the caption buttons and drag behavior.
+                if (AppTitleBar != null) SetTitleBar(AppTitleBar);
+            }
+        }
+        catch
+        {
+            // Best-effort only; ignore if not supported on this OS or SDK.
         }
     }
 }
