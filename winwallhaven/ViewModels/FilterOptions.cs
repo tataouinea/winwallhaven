@@ -2,11 +2,11 @@ namespace winwallhaven.ViewModels;
 
 public sealed class FilterOptions : ViewModelBase
 {
-    private bool _categoryAnime = true;
+    private bool _categoryAnime;
 
     // Categories (General, Anime, People) -> 3-bit string
     private bool _categoryGeneral = true;
-    private bool _categoryPeople = true;
+    private bool _categoryPeople;
     private int? _minHeight;
     private int? _minWidth;
     private bool _purityNsfw;
