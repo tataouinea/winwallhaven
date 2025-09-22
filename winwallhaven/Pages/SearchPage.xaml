@@ -16,12 +16,6 @@
         </Grid.RowDefinitions>
 
         <CommandBar DefaultLabelPosition="Right">
-            <CommandBar.Content>
-                <StackPanel Orientation="Horizontal" Spacing="8">
-                    <TextBox Width="300" PlaceholderText="Search"
-                             Text="{Binding Query, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
-                </StackPanel>
-            </CommandBar.Content>
             <CommandBar.PrimaryCommands>
                 <AppBarButton Icon="Filter" Label="Filters">
                     <AppBarButton.Flyout>
@@ -79,7 +73,6 @@
                         </Flyout>
                     </AppBarButton.Flyout>
                 </AppBarButton>
-                <AppBarButton Icon="Find" Label="Search" Command="{Binding SearchCommand}" />
                 <AppBarSeparator />
                 <AppBarButton Label="First" Command="{Binding FirstPageCommand}">
                     <AppBarButton.Icon>
