@@ -1,0 +1,60 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+
+<Package
+        xmlns:uap="http://schemas.microsoft.com/appx/manifest/uap/windows10"
+        xmlns:mp="http://schemas.microsoft.com/appx/2014/phone/manifest"
+        xmlns="http://schemas.microsoft.com/appx/manifest/foundation/windows10"
+        IgnorableNamespaces="uap mp">
+
+    <Identity
+            Name="tataouinea.winwallhaven"
+            Publisher="CN=D446D540-3423-4261-8E24-C6100F7F1740"
+            Version="1.0.17.0"/>
+
+    <mp:PhoneIdentity
+            PhoneProductId="9f1b1a93-2b3c-4f2a-a5a3-3b13d2d6215c"
+            PhonePublisherId="75d9ed28-f5e2-4c6c-8c5a-651d1d7b2f4f">
+    </mp:PhoneIdentity>
+
+    <Properties>
+        <DisplayName>winwallhaven</DisplayName>
+        <PublisherDisplayName>tataouinea</PublisherDisplayName>
+        <Logo>Images\StoreLogo.png</Logo>
+    </Properties>
+
+    <Dependencies>
+        <TargetDeviceFamily Name="Windows.Universal" MinVersion="10.0.17763.0" MaxVersionTested="10.0.19041.0"/>
+        <TargetDeviceFamily Name="Windows.Desktop" MinVersion="10.0.17763.0" MaxVersionTested="10.0.19041.0"/>
+    </Dependencies>
+
+    <Resources>
+        <Resource Language="x-generate"/>
+    </Resources>
+
+    <Applications>
+        <Application Id="App"
+                     Executable="$targetnametoken$.exe"
+                     EntryPoint="windows.partialTrustApplication">
+            <uap:VisualElements
+                    DisplayName="winwallhaven"
+                    Description="Your fast, modern, and private way to explore, search, and set stunning wallpapers from wallhaven.cc on Windows 10/11."
+                    BackgroundColor="#0A1321"
+                    Square150x150Logo="Images\Square150x150Logo.png"
+                    Square44x44Logo="Images\Square44x44Logo.png">
+                <uap:DefaultTile Wide310x150Logo="Images\Wide310x150Logo.png" ShortName="winwallhaven"
+                                 Square71x71Logo="Images\SmallTile.png" Square310x310Logo="Images\LargeTile.png">
+                    <uap:ShowNameOnTiles>
+                        <uap:ShowOn Tile="square150x150Logo"/>
+                        <uap:ShowOn Tile="wide310x150Logo"/>
+                    </uap:ShowNameOnTiles>
+                </uap:DefaultTile>
+                <uap:SplashScreen Image="Images\SplashScreen.png" BackgroundColor="#0A1321"/>
+                <uap:LockScreen BadgeLogo="Images\BadgeLogo.png" Notification="badge"/>
+            </uap:VisualElements>
+        </Application>
+    </Applications>
+
+    <Capabilities>
+        <Capability Name="internetClient"/>
+    </Capabilities>
+</Package>
