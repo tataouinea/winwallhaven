@@ -74,18 +74,6 @@ public sealed partial class MainWindow : Window
                         TitleSearchHost.DataContext = svm;
                 });
                 break;
-            case "About":
-                OpenUrl("https://github.com/tataouinea/winwallhaven");
-                UpdateTitleSearchVisibility(false);
-                break;
-            case "ReportBug":
-                OpenUrl("https://github.com/tataouinea/winwallhaven/issues");
-                UpdateTitleSearchVisibility(false);
-                break;
-            case "Feedback":
-                OpenUrl("https://github.com/tataouinea/winwallhaven/discussions");
-                UpdateTitleSearchVisibility(false);
-                break;
         }
     }
 

@@ -92,23 +92,7 @@
                 </NavigationViewItem>
             </NavigationView.MenuItems>
 
-            <NavigationView.FooterMenuItems>
-                <NavigationViewItem x:Name="AboutItem" Content="About" Tag="About">
-                    <NavigationViewItem.Icon>
-                        <SymbolIcon Symbol="Help" />
-                    </NavigationViewItem.Icon>
-                </NavigationViewItem>
-                <NavigationViewItem x:Name="ReportBugItem" Content="Report a bug" Tag="ReportBug">
-                    <NavigationViewItem.Icon>
-                        <SymbolIcon Symbol="Important" />
-                    </NavigationViewItem.Icon>
-                </NavigationViewItem>
-                <NavigationViewItem x:Name="FeedbackItem" Content="Feedback" Tag="Feedback">
-                    <NavigationViewItem.Icon>
-                        <SymbolIcon Symbol="Like" />
-                    </NavigationViewItem.Icon>
-                </NavigationViewItem>
-            </NavigationView.FooterMenuItems>
+            <!-- Footer items removed per request (About, Report a bug, Feedback) -->
 
             <Frame x:Name="RootFrame" />
         </NavigationView>

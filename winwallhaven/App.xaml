@@ -155,12 +155,6 @@
                                         <controls:AsyncImage Source="{Binding Thumb}" Tag="{Binding}">
                                             <controls:AsyncImage.ContextFlyout>
                                                 <MenuFlyout>
-                                                    <MenuFlyoutItem Text="Open in Browser" Icon="Globe"
-                                                                    Command="{Binding DataContext.OpenInBrowserCommand, ElementName=RootPage}"
-                                                                    CommandParameter="{Binding}" />
-                                                    <MenuFlyoutItem Text="Download" Icon="Download"
-                                                                    Command="{Binding DataContext.DownloadCommand, ElementName=RootPage}"
-                                                                    CommandParameter="{Binding}" />
                                                     <MenuFlyoutItem Text="Set as Wallpaper" Icon="Pictures"
                                                                     Command="{Binding DataContext.SetAsWallpaperCommand, ElementName=RootPage}"
                                                                     CommandParameter="{Binding}" />
@@ -267,12 +261,6 @@
                                         <controls:AsyncImage Source="{Binding Thumb}" Tag="{Binding}">
                                             <controls:AsyncImage.ContextFlyout>
                                                 <MenuFlyout>
-                                                    <MenuFlyoutItem Text="Open in Browser" Icon="Globe"
-                                                                    Command="{Binding DataContext.OpenInBrowserCommand, ElementName=RootPage}"
-                                                                    CommandParameter="{Binding}" />
-                                                    <MenuFlyoutItem Text="Download" Icon="Download"
-                                                                    Command="{Binding DataContext.DownloadCommand, ElementName=RootPage}"
-                                                                    CommandParameter="{Binding}" />
                                                     <MenuFlyoutItem Text="Set as Wallpaper" Icon="Pictures"
                                                                     Command="{Binding DataContext.SetAsWallpaperCommand, ElementName=RootPage}"
                                                                     CommandParameter="{Binding}" />
