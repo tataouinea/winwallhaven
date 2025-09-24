@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using Windows.Storage;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.UI.Xaml;
@@ -66,11 +67,8 @@ public partial class App : Application
 
     private static void ConfigureSerilog()
     {
-        // Create logs directory in AppData
-        var logsDirectory = Path.Combine(
-            Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
-            "winwallhaven",
-            "logs");
+        // Create logs directory in packaged app's LocalFolder
+        var logsDirectory = Path.Combine(ApplicationData.Current.LocalFolder.Path, "logs");
         Directory.CreateDirectory(logsDirectory);
 
         var logFilePath = Path.Combine(logsDirectory, "winwallhaven.log");

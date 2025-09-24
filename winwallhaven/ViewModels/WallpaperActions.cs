@@ -13,6 +13,9 @@ using winwallhaven.Services;
 using Windows.Storage.Pickers;
 using WinRT.Interop;
 #endif
+#if WINDOWS
+using Windows.Storage;
+#endif
 
 namespace winwallhaven.ViewModels;
 
@@ -102,8 +105,8 @@ public sealed class WallpaperActions
         if (w == null) return;
         try
         {
-            var cache = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
-                "winwallhaven", "cache");
+            // Use packaged app LocalFolder for cache
+            var cache = Path.Combine(ApplicationData.Current.LocalFolder.Path, "cache");
             Directory.CreateDirectory(cache);
             var local = await _wallpaperService.DownloadAsync(w, cache);
             await _wallpaperService.SetDesktopWallpaperAsync(local);
@@ -122,8 +125,8 @@ public sealed class WallpaperActions
         if (w == null) return;
         try
         {
-            var cache = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
-                "winwallhaven", "cache");
+            // Use packaged app LocalFolder for cache
+            var cache = Path.Combine(ApplicationData.Current.LocalFolder.Path, "cache");
             Directory.CreateDirectory(cache);
             var local = await _wallpaperService.DownloadAsync(w, cache);
             await _wallpaperService.SetLockScreenImageAsync(local);
@@ -145,8 +148,8 @@ public sealed class WallpaperActions
         if (w == null) return;
         try
         {
-            var cache = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
-                "winwallhaven", "cache");
+            // Use packaged app LocalFolder for cache
+            var cache = Path.Combine(ApplicationData.Current.LocalFolder.Path, "cache");
             Directory.CreateDirectory(cache);
             var local = await _wallpaperService.DownloadAsync(w, cache);
             // Apply to desktop wallpaper first, then lock screen using the same file

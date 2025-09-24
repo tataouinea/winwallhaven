@@ -6,6 +6,7 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
+using Windows.Storage;
 using winwallhaven.Core.Models;
 
 namespace winwallhaven.Services;
@@ -26,8 +27,7 @@ internal sealed class LocalHistoryService : IHistoryService
 
     public LocalHistoryService()
     {
-        var appData = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
-        var dir = Path.Combine(appData, "winwallhaven", "history");
+        var dir = Path.Combine(ApplicationData.Current.LocalFolder.Path, "history");
         Directory.CreateDirectory(dir);
         _dbPath = Path.Combine(dir, "history.json");
         _ = LoadAsync();
