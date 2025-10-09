@@ -1,8 +1,8 @@
+using Microsoft.UI.Xaml;
 using System;
 using System.IO;
 using System.Text.Json;
 using Windows.Storage;
-using Microsoft.UI.Xaml;
 
 namespace winwallhaven.Services;
 

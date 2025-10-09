@@ -1,3 +1,4 @@
+using Microsoft.Extensions.Logging;
 using System;
 using System.IO;
 using System.Net.Http;
@@ -7,7 +8,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Windows.Storage;
 using Windows.System.UserProfile;
-using Microsoft.Extensions.Logging;
 using winwallhaven.Core.Models;
 
 namespace winwallhaven.Core.Wallpapers;

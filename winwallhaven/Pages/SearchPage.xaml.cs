@@ -1,10 +1,10 @@
-using System;
-using Windows.System;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media.Imaging;
+using System;
+using Windows.System;
 using winwallhaven.Core.Models;
 using winwallhaven.Services;
 using winwallhaven.ViewModels;

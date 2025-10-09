@@ -1,12 +1,12 @@
-using System;
-using System.Diagnostics;
-using Windows.System;
 using Microsoft.UI;
 using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Navigation;
+using System;
+using System.Diagnostics;
+using Windows.System;
 using WinRT.Interop;
 using winwallhaven.Pages;
 using winwallhaven.ViewModels;

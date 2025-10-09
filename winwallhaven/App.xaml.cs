@@ -1,10 +1,10 @@
-﻿using System;
-using System.IO;
-using Windows.Storage;
-using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.UI.Xaml;
 using Serilog;
+using System;
+using System.IO;
+using Windows.Storage;
 using winwallhaven.Core.Services;
 using winwallhaven.Core.Wallpapers;
 using winwallhaven.Services;
