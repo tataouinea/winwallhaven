@@ -1,3 +1,6 @@
 [submodule "WinUI-Gallery"]
 	path = WinUI-Gallery
 	url = git@github.com:microsoft/WinUI-Gallery.git
+[submodule "WindowsAppSDK-Samples"]
+	path = WindowsAppSDK-Samples
+	url = https://github.com/microsoft/WindowsAppSDK-Samples.git
