@@ -9,7 +9,7 @@
     <Identity
             Name="tataouinea.winwallhaven"
             Publisher="CN=D446D540-3423-4261-8E24-C6100F7F1740"
-            Version="1.0.18.0"/>
+            Version="1.0.19.0"/>
 
     <mp:PhoneIdentity
             PhoneProductId="9f1b1a93-2b3c-4f2a-a5a3-3b13d2d6215c"
