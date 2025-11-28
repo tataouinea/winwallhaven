@@ -3,6 +3,7 @@ using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Threading;
@@ -24,12 +25,12 @@ public sealed class WallhavenApiClient : IWallhavenApiClient
         if (!string.IsNullOrWhiteSpace(apiKey))
         {
             _http.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", apiKey);
-            _logger.LogInformation("Wallhaven API client configured with API key (masked) and base {Base}",
+            _logger.LogInformation("wallhaven.cc API client configured with API key (masked) and base {Base}",
                 _http.BaseAddress);
         }
         else
         {
-            _logger.LogInformation("Wallhaven API client created without API key. Base {Base}", _http.BaseAddress);
+            _logger.LogInformation("wallhaven.cc API client created without API key. Base {Base}", _http.BaseAddress);
         }
     }
 
@@ -50,7 +51,6 @@ public sealed class WallhavenApiClient : IWallhavenApiClient
         Add("sorting", query.Sorting);
         Add("order", query.Order);
         Add("page", query.Page?.ToString());
-        // Add("per_page", query.PerPage?.ToString());
         Add("atleast",
             query.AtLeastWidth.HasValue && query.AtLeastHeight.HasValue
                 ? $"{query.AtLeastWidth}x{query.AtLeastHeight}"
@@ -63,41 +63,81 @@ public sealed class WallhavenApiClient : IWallhavenApiClient
         var url = "search" + (qp.Count > 0 ? "?" + string.Join('&', qp) : string.Empty);
         _logger.LogDebug("Issuing search request: {Url} Query={Query} Categories={Categories} Purity={Purity}", url,
             query.Query, query.Categories, purityParam);
-        using var resp = await _http.GetAsync(url, ct);
-        if (!resp.IsSuccessStatusCode)
-        {
-            _logger.LogWarning("Search request failed with status {Status} for {Url}", resp.StatusCode, url);
-            resp.EnsureSuccessStatusCode();
-        }
 
-        var json = JObject.Parse(await resp.Content.ReadAsStringAsync(ct));
-        var data = (JArray)json["data"]!;
-        var list = new List<Wallpaper>(data.Count);
-        foreach (var item in data) list.Add(ParseWallpaper((JObject)item));
-        var meta = json["meta"] as JObject;
-        var currentPage = (int?)meta?["current_page"] ?? query.Page ?? 1;
-        var lastPage = (int?)meta?["last_page"];
-        // var perPage = (int?)meta?["per_page"]; // keep for reference though fixed (24)
-        var total = (int?)meta?["total"];
-        _logger.LogInformation("Search returned {Count} wallpapers for query {Query} (Page {Page}/{Last})", list.Count,
-            query.Query, currentPage, lastPage);
-        return new WallpaperSearchResult(list, currentPage, lastPage, total);
+        try
+        {
+            using var resp = await _http.GetAsync(url, ct);
+            if (!resp.IsSuccessStatusCode)
+            {
+                var status = resp.StatusCode;
+                var reason = GetStatusDescription(status);
+                _logger.LogWarning("wallhaven.cc search request failed with status {Status} ({Reason}) for {Url}", status, reason, url);
+                // Include StatusCode so UI can read it; do not include body.
+                throw new HttpRequestException($"Request failed with status {(int)status} ({reason}).", null, status);
+            }
+
+            var content = await resp.Content.ReadAsStringAsync(ct);
+            var json = JObject.Parse(content);
+            var data = (JArray)json["data"]!;
+            var list = new List<Wallpaper>(data.Count);
+            foreach (var item in data) list.Add(ParseWallpaper((JObject)item));
+            var meta = json["meta"] as JObject;
+            var currentPage = (int?)meta?["current_page"] ?? query.Page ?? 1;
+            var lastPage = (int?)meta?["last_page"];
+            var total = (int?)meta?["total"];
+            _logger.LogInformation("Search returned {Count} wallpapers for query {Query} (Page {Page}/{Last})", list.Count,
+                query.Query, currentPage, lastPage);
+            return new WallpaperSearchResult(list, currentPage, lastPage, total);
+        }
+        catch (OperationCanceledException oce) when (!ct.IsCancellationRequested)
+        {
+            _logger.LogError(oce, "wallhaven.cc search request timed out");
+            throw new TimeoutException("The request timed out.", oce);
+        }
+        catch (HttpRequestException hre)
+        {
+            _logger.LogError(hre, "HTTP error while contacting wallhaven.cc");
+            throw; // Preserve as HTTP error for UI handling
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Unexpected error while contacting wallhaven.cc API");
+            throw new Exception("The request failed due to a connectivity or unexpected error.", ex);
+        }
     }
 
     public async Task<Wallpaper?> GetByIdAsync(string id, CancellationToken ct = default)
     {
         _logger.LogDebug("Fetching wallpaper by id {Id}", id);
-        using var resp = await _http.GetAsync($"wallpaper/{id}", ct);
-        if (!resp.IsSuccessStatusCode)
+        try
         {
-            _logger.LogInformation("Wallpaper id {Id} not found. Status {Status}", id, resp.StatusCode);
-            return null;
-        }
+            using var resp = await _http.GetAsync($"wallpaper/{id}", ct);
+            if (!resp.IsSuccessStatusCode)
+            {
+                _logger.LogInformation("wallhaven.cc wallpaper id {Id} not found. Status {Status}", id, resp.StatusCode);
+                return null;
+            }
 
-        var json = JObject.Parse(await resp.Content.ReadAsStringAsync(ct));
-        var data = (JObject)json["data"]!;
-        _logger.LogTrace("Wallpaper raw json length {Length}", json.ToString().Length);
-        return ParseWallpaper(data);
+            var json = JObject.Parse(await resp.Content.ReadAsStringAsync(ct));
+            var data = (JObject)json["data"]!;
+            _logger.LogTrace("Wallpaper raw json length {Length}", json.ToString().Length);
+            return ParseWallpaper(data);
+        }
+        catch (OperationCanceledException oce) when (!ct.IsCancellationRequested)
+        {
+            _logger.LogError(oce, "wallhaven.cc GetById request timed out");
+            throw new TimeoutException("The request timed out.", oce);
+        }
+        catch (HttpRequestException hre)
+        {
+            _logger.LogError(hre, "HTTP error while contacting wallhaven.cc");
+            throw;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Unexpected error while contacting wallhaven.cc API");
+            throw new Exception("The request failed due to a connectivity or unexpected error.", ex);
+        }
     }
 
     public async Task<IReadOnlyList<string>> GetTagSuggestionsAsync(string partial, CancellationToken ct = default)
@@ -105,6 +145,23 @@ public sealed class WallhavenApiClient : IWallhavenApiClient
         await Task.Yield();
         _logger.LogDebug("Tag suggestions requested for partial '{Partial}' (not implemented)", partial);
         return Array.Empty<string>();
+    }
+
+    private static string GetStatusDescription(HttpStatusCode status)
+    {
+        return status switch
+        {
+            HttpStatusCode.BadRequest => "Bad Request",
+            HttpStatusCode.Unauthorized => "Unauthorized",
+            HttpStatusCode.Forbidden => "Forbidden",
+            HttpStatusCode.NotFound => "Not Found",
+            HttpStatusCode.RequestTimeout => "Request Timeout",
+            HttpStatusCode.InternalServerError => "Internal Server Error",
+            HttpStatusCode.BadGateway => "Bad Gateway",
+            HttpStatusCode.ServiceUnavailable => "Service Unavailable",
+            HttpStatusCode.GatewayTimeout => "Gateway Timeout",
+            _ => status.ToString()
+        };
     }
 
     private static Wallpaper ParseWallpaper(JObject obj)

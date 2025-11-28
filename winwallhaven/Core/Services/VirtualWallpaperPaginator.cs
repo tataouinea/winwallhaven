@@ -34,6 +34,7 @@ public sealed class VirtualWallpaperPaginator
         int? lastApiPage = null;
         var failures = 0;
         var successes = 0;
+        Exception? lastException = null;
         for (var i = 0; i < pagesPerLogical; i++)
         {
             var apiPage = firstApiPage + i;
@@ -48,9 +49,10 @@ public sealed class VirtualWallpaperPaginator
                     // Reached the real end; stop early.
                     break;
             }
-            catch
+            catch (Exception ex)
             {
                 failures++;
+                lastException = ex; // remember last specific failure (HTTP status, timeout, etc.)
                 // swallow and continue; if all fail we'll surface failure below
             }
         }
@@ -64,9 +66,12 @@ public sealed class VirtualWallpaperPaginator
         }
 
         if (successes == 0 || aggregate.Count == 0)
+        {
             // All API calls failed or no items were retrieved for this logical page.
-            // Signal failure so callers can revert to the previous logical page.
+            // Propagate the last specific exception if available so callers can present meaningful errors.
+            if (lastException != null) throw lastException;
             throw new InvalidOperationException("Failed to retrieve items for the requested page.");
+        }
 
         return new VirtualWallpaperPage(aggregate, logicalPage, virtualLast, _logicalPageSize);
     }

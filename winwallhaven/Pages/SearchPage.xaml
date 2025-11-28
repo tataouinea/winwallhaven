@@ -94,6 +94,23 @@
                       Style="{StaticResource ResponsiveWallpaperGridViewWithMenu}" />
         </Grid>
 
+        <!-- Centered Error Overlay -->
+        <Grid Grid.RowSpan="2" Background="{ThemeResource SolidBackgroundFillColorBaseBrush}" Opacity="0.90"
+              Visibility="{Binding HasError, Converter={StaticResource BoolToVisibilityConverter}}"
+              Canvas.ZIndex="100">
+            <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="16">
+                <FontIcon Glyph="&#xEA39;" FontSize="36"/>
+                <TextBlock Text="Unable to load wallpapers" FontSize="18" FontWeight="SemiBold" HorizontalAlignment="Center" TextAlignment="Center" />
+                <TextBlock Text="{Binding ErrorMessage}" TextWrapping="Wrap" TextAlignment="Center" MaxWidth="520" />
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Spacing="8">
+                    <HyperlinkButton Content="Open wallhaven.cc API"
+                                     NavigateUri="https://wallhaven.cc/api/v1/search"
+                                     Visibility="{Binding ShowApiLink, Converter={StaticResource BoolToVisibilityConverter}}"/>
+                    <Button Content="Retry" Command="{Binding RetryCommand}" />
+                </StackPanel>
+            </StackPanel>
+        </Grid>
+
         <!-- Page Loading Overlay -->
         <Grid Grid.RowSpan="2" Background="{ThemeResource SolidBackgroundFillColorBaseBrush}" Opacity="0.85"
               Visibility="{Binding IsLoading, Converter={StaticResource BoolToVisibilityConverter}}"

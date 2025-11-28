@@ -98,7 +98,10 @@ public partial class App : Application
         });
 
         services.AddHttpClient<IWallpaperService, WindowsWallpaperService>();
-        services.AddHttpClient<IWallhavenApiClient, WallhavenApiClient>();
+        services.AddHttpClient<IWallhavenApiClient, WallhavenApiClient>(client =>
+        {
+            client.Timeout = TimeSpan.FromSeconds(30);
+        });
         services.AddSingleton<IHistoryService, LocalHistoryService>();
         services.AddSingleton<IThemeService, ThemeService>();
         services.AddSingleton<SearchViewModel>();

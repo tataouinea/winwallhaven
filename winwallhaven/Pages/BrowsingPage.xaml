@@ -2,7 +2,6 @@
 
 <Page
     x:Class="winwallhaven.Pages.BrowsingPage"
-    x:Name="RootPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
@@ -16,9 +15,6 @@
         </Grid.RowDefinitions>
 
         <CommandBar DefaultLabelPosition="Right">
-            <CommandBar.Content>
-                <StackPanel Orientation="Horizontal" Spacing="8" />
-            </CommandBar.Content>
             <CommandBar.PrimaryCommands>
                 <AppBarButton Icon="Filter" Label="Filters">
                     <AppBarButton.Flyout>
@@ -74,13 +70,7 @@
                         </Flyout>
                     </AppBarButton.Flyout>
                 </AppBarButton>
-                <AppBarButton Icon="Refresh" Label="Refresh" Command="{Binding RefreshCommand}" />
                 <AppBarSeparator />
-                <AppBarButton Label="First" Command="{Binding FirstPageCommand}">
-                    <AppBarButton.Icon>
-                        <PathIcon Data="M6,4 L6,28 9,28 9,4 Z M12,16 L28,4 28,28 Z" />
-                    </AppBarButton.Icon>
-                </AppBarButton>
                 <AppBarButton Icon="Previous" Label="Prev" Command="{Binding PrevPageCommand}" />
                 <AppBarElementContainer VerticalAlignment="Center">
                     <Grid Height="40" Margin="8,0">
@@ -89,6 +79,8 @@
                     </Grid>
                 </AppBarElementContainer>
                 <AppBarButton Icon="Next" Label="Next" Command="{Binding NextPageCommand}" />
+                <AppBarSeparator />
+                <AppBarButton Icon="Refresh" Label="Refresh" Command="{Binding RefreshCommand}" />
             </CommandBar.PrimaryCommands>
         </CommandBar>
 
@@ -97,9 +89,26 @@
                       Style="{StaticResource ResponsiveWallpaperGridViewWithMenu}" />
         </Grid>
 
-        <!-- Page Loading Overlay -->
+        <!-- Centered Error Overlay -->
+        <Grid Grid.RowSpan="2" Background="{ThemeResource SolidBackgroundFillColorBaseBrush}" Opacity="0.90"
+              Visibility="{Binding HasError, Converter={StaticResource BoolToVisibilityConverter}}"
+              Canvas.ZIndex="100">
+            <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="16">
+                <FontIcon Glyph="&#xEA39;" FontSize="36"/>
+                <TextBlock Text="Unable to load wallpapers" FontSize="18" FontWeight="SemiBold" HorizontalAlignment="Center" TextAlignment="Center" />
+                <TextBlock Text="{Binding ErrorMessage}" TextWrapping="Wrap" TextAlignment="Center" MaxWidth="520" />
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Spacing="8">
+                    <HyperlinkButton Content="Open wallhaven.cc API"
+                                     NavigateUri="https://wallhaven.cc/api/v1/search"
+                                     Visibility="{Binding ShowApiLink, Converter={StaticResource BoolToVisibilityConverter}}"/>
+                    <Button Content="Retry" Command="{Binding RetryCommand}" />
+                </StackPanel>
+            </StackPanel>
+        </Grid>
+
         <Grid Grid.RowSpan="2" Background="{ThemeResource SolidBackgroundFillColorBaseBrush}" Opacity="0.85"
-              Visibility="{Binding IsLoading, Converter={StaticResource BoolToVisibilityConverter}}">
+              Visibility="{Binding IsLoading, Converter={StaticResource BoolToVisibilityConverter}}"
+              Canvas.ZIndex="99">
             <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="16">
                 <ProgressRing IsActive="True" Width="64" Height="64" />
                 <TextBlock Text="Loading wallpapers..." FontSize="14" FontWeight="SemiBold" />

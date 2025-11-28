@@ -3,6 +3,8 @@ using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
+using System.Net;
+using System.Net.Http;
 using System.Threading.Tasks;
 using System.Windows.Input;
 using winwallhaven.Core.Models;
@@ -23,6 +25,9 @@ public abstract class BrowsingViewModelBase : ViewModelBase
     private int _currentPage = 1;
     private bool _isLoading;
     private int? _lastPage;
+    private bool _hasError;
+    private string _errorMessage = string.Empty;
+    private bool _showApiLink;
 
     protected BrowsingViewModelBase(IWallhavenApiClient api, IWallpaperService wallpaperService, ILogger? logger = null)
     {
@@ -33,6 +38,7 @@ public abstract class BrowsingViewModelBase : ViewModelBase
         NextPageCommand = new AsyncRelayCommand(LoadNextPageAsync, () => !IsLoading && CanLoadNextPage);
         PrevPageCommand = new AsyncRelayCommand(LoadPrevPageAsync, () => !IsLoading && CanLoadPrevPage);
         ApplyFiltersCommand = new AsyncRelayCommand(LoadFirstPageAsync, () => !IsLoading);
+        RetryCommand = new AsyncRelayCommand(LoadFirstPageAsync, () => !IsLoading);
         _wallpaperService = wallpaperService;
         _actions = new WallpaperActions(wallpaperService, App.Services.GetRequiredService<IHistoryService>(), logger,
             () => IsLoading);
@@ -73,6 +79,24 @@ public abstract class BrowsingViewModelBase : ViewModelBase
         }
     }
 
+    public bool HasError
+    {
+        get => _hasError;
+        private set => SetProperty(ref _hasError, value);
+    }
+
+    public string ErrorMessage
+    {
+        get => _errorMessage;
+        private set => SetProperty(ref _errorMessage, value);
+    }
+
+    public bool ShowApiLink
+    {
+        get => _showApiLink;
+        private set => SetProperty(ref _showApiLink, value);
+    }
+
     public bool CanLoadNextPage => LastPage == null || CurrentPage < LastPage;
     public bool CanLoadPrevPage => CurrentPage > 1;
 
@@ -81,6 +105,7 @@ public abstract class BrowsingViewModelBase : ViewModelBase
     public ICommand NextPageCommand { get; }
     public ICommand PrevPageCommand { get; }
     public ICommand ApplyFiltersCommand { get; }
+    public ICommand RetryCommand { get; }
     public ICommand OpenInBrowserCommand => _actions.OpenInBrowserCommand;
     public ICommand OpenUserProfileCommand => _actions.OpenUserProfileCommand;
     public ICommand SetAsWallpaperCommand => _actions.SetAsWallpaperCommand;
@@ -93,7 +118,6 @@ public abstract class BrowsingViewModelBase : ViewModelBase
 
     public async Task LoadAsync()
     {
-        // Prevent re-entrant loads (e.g., during rapid navigation or initial selection churn)
         if (IsLoading) return;
         if (Results.Count == 0)
             await LoadFirstPageAsync();
@@ -122,6 +146,9 @@ public abstract class BrowsingViewModelBase : ViewModelBase
     private async Task<bool> LoadPageAsync()
     {
         IsLoading = true;
+        HasError = false;
+        ShowApiLink = false;
+        ErrorMessage = string.Empty;
         try
         {
             Results.Clear();
@@ -135,9 +162,27 @@ public abstract class BrowsingViewModelBase : ViewModelBase
                 Results.Count, sw.ElapsedMilliseconds);
             return true;
         }
-        catch (Exception ex)
+        catch (InvalidOperationException)
         {
-            Logger?.LogError(ex, "Failed to load page");
+            // No items or logical page beyond real end; treat as navigation stop and revert.
+            HasError = false;
+            ErrorMessage = string.Empty;
+            return false;
+        }
+        catch (TimeoutException tex)
+        {
+            Logger?.LogError(tex, "Timeout while loading page");
+            HasError = true;
+            ShowApiLink = true;
+            ErrorMessage = BuildTimeoutMessage(30);
+            return false;
+        }
+        catch (HttpRequestException hre)
+        {
+            Logger?.LogError(hre, "HTTP failure while loading page");
+            HasError = true;
+            ShowApiLink = !hre.StatusCode.HasValue;
+            ErrorMessage = BuildHttpFailureMessage(hre);
             return false;
         }
         finally
@@ -166,7 +211,48 @@ public abstract class BrowsingViewModelBase : ViewModelBase
         (NextPageCommand as AsyncRelayCommand)?.RaiseCanExecuteChanged();
         (PrevPageCommand as AsyncRelayCommand)?.RaiseCanExecuteChanged();
         (ApplyFiltersCommand as AsyncRelayCommand)?.RaiseCanExecuteChanged();
+        (RetryCommand as AsyncRelayCommand)?.RaiseCanExecuteChanged();
         _actions.RaiseCanExec();
+    }
+
+    private static string DescribeStatus(HttpStatusCode status)
+    {
+        return status switch
+        {
+            HttpStatusCode.BadRequest => "Bad Request",
+            HttpStatusCode.Unauthorized => "Unauthorized",
+            HttpStatusCode.Forbidden => "Forbidden",
+            HttpStatusCode.NotFound => "Not Found",
+            HttpStatusCode.RequestTimeout => "Request Timeout",
+            HttpStatusCode.InternalServerError => "Internal Server Error",
+            HttpStatusCode.BadGateway => "Bad Gateway",
+            HttpStatusCode.ServiceUnavailable => "Service Unavailable",
+            HttpStatusCode.GatewayTimeout => "Gateway Timeout",
+            _ => status.ToString()
+        };
+    }
+
+    private static string BuildHttpFailureMessage(HttpRequestException hre)
+    {
+        var statusCodeProp = hre.StatusCode;
+        if (statusCodeProp.HasValue)
+        {
+            var status = statusCodeProp.Value;
+            var code = (int)status;
+            var reason = DescribeStatus(status);
+            return $"HTTP status {code} ({reason}).";
+        }
+        return BuildGenericFailureMessage();
+    }
+
+    private static string BuildGenericFailureMessage()
+    {
+        return "The request failed due to a connectivity error. Please ensure your internet connection works and that wallhaven.cc is reachable. You can also click the link below to verify wallhaven.cc's API is accessible from your device.";
+    }
+
+    private static string BuildTimeoutMessage(int seconds)
+    {
+        return $"The request timed out after {seconds} seconds. This may indicate a slow or unstable network, or that wallhaven.cc took too long to respond. You can also click the link below to verify wallhaven.cc's API is accessible from your device.";
     }
 }
 

@@ -4,6 +4,8 @@ using Microsoft.UI.Xaml;
 using System;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
+using System.Net;
+using System.Net.Http;
 using System.Threading.Tasks;
 using System.Windows.Input;
 using winwallhaven.Core.Models;
@@ -27,6 +29,9 @@ public sealed class SearchViewModel : ViewModelBase
     private int? _lastPage;
     private string _query = string.Empty;
     private Wallpaper? _selected;
+    private bool _hasError;
+    private string _errorMessage = string.Empty;
+    private bool _showApiLink;
 
     public SearchViewModel(IWallhavenApiClient apiClient, IWallpaperService wallpaperService,
         ILogger<SearchViewModel>? logger = null)
@@ -39,6 +44,7 @@ public sealed class SearchViewModel : ViewModelBase
         FirstPageCommand = new AsyncRelayCommand(LoadFirstPageAsync, () => !IsLoading && CanLoadPrevPage);
         NextPageCommand = new AsyncRelayCommand(LoadNextPageAsync, () => !IsLoading && CanLoadNextPage);
         PrevPageCommand = new AsyncRelayCommand(LoadPrevPageAsync, () => !IsLoading && CanLoadPrevPage);
+        RetryCommand = new AsyncRelayCommand(SearchFirstPageAsync, () => !IsLoading);
         _actions = new WallpaperActions(wallpaperService, App.Services.GetRequiredService<IHistoryService>(), logger,
             () => IsLoading);
         _paginator = new VirtualWallpaperPaginator(apiClient);
@@ -56,6 +62,24 @@ public sealed class SearchViewModel : ViewModelBase
             SetProperty(ref _isLoading, value);
             RaiseCanExec();
         }
+    }
+
+    public bool HasError
+    {
+        get => _hasError;
+        private set => SetProperty(ref _hasError, value);
+    }
+
+    public string ErrorMessage
+    {
+        get => _errorMessage;
+        private set => SetProperty(ref _errorMessage, value);
+    }
+
+    public bool ShowApiLink
+    {
+        get => _showApiLink;
+        private set => SetProperty(ref _showApiLink, value);
     }
 
     public string Query
@@ -102,6 +126,7 @@ public sealed class SearchViewModel : ViewModelBase
     public ICommand FirstPageCommand { get; }
     public ICommand NextPageCommand { get; }
     public ICommand PrevPageCommand { get; }
+    public ICommand RetryCommand { get; }
     public ICommand OpenInBrowserCommand => _actions.OpenInBrowserCommand;
     public ICommand OpenUserProfileCommand => _actions.OpenUserProfileCommand;
     public ICommand SetAsWallpaperCommand => _actions.SetAsWallpaperCommand;
@@ -115,6 +140,9 @@ public sealed class SearchViewModel : ViewModelBase
     private async Task<bool> LoadPageAsync()
     {
         IsLoading = true;
+        HasError = false;
+        ErrorMessage = string.Empty;
+        ShowApiLink = false;
         try
         {
             Results.Clear();
@@ -136,9 +164,26 @@ public sealed class SearchViewModel : ViewModelBase
                 Results.Count, sw.ElapsedMilliseconds);
             return true;
         }
-        catch (Exception ex)
+        catch (InvalidOperationException)
         {
-            _logger?.LogError(ex, "Failed to load page");
+            HasError = false;
+            ErrorMessage = string.Empty;
+            return false;
+        }
+        catch (TimeoutException tex)
+        {
+            _logger?.LogError(tex, "Timeout while loading page");
+            HasError = true;
+            ShowApiLink = true;
+            ErrorMessage = BuildTimeoutMessage(30);
+            return false;
+        }
+        catch (HttpRequestException hre)
+        {
+            _logger?.LogError(hre, "HTTP failure while loading page");
+            HasError = true;
+            ShowApiLink = !hre.StatusCode.HasValue; // show link only when we don't have an HTTP status
+            ErrorMessage = BuildHttpFailureMessage(hre);
             return false;
         }
         finally
@@ -193,7 +238,49 @@ public sealed class SearchViewModel : ViewModelBase
         (FirstPageCommand as AsyncRelayCommand)?.RaiseCanExecuteChanged();
         (NextPageCommand as AsyncRelayCommand)?.RaiseCanExecuteChanged();
         (PrevPageCommand as AsyncRelayCommand)?.RaiseCanExecuteChanged();
+        (RetryCommand as AsyncRelayCommand)?.RaiseCanExecuteChanged();
         _actions.RaiseCanExec();
+    }
+
+    private static string DescribeStatus(HttpStatusCode status)
+    {
+        return status switch
+        {
+            HttpStatusCode.BadRequest => "Bad Request",
+            HttpStatusCode.Unauthorized => "Unauthorized",
+            HttpStatusCode.Forbidden => "Forbidden",
+            HttpStatusCode.NotFound => "Not Found",
+            HttpStatusCode.RequestTimeout => "Request Timeout",
+            HttpStatusCode.InternalServerError => "Internal Server Error",
+            HttpStatusCode.BadGateway => "Bad Gateway",
+            HttpStatusCode.ServiceUnavailable => "Service Unavailable",
+            HttpStatusCode.GatewayTimeout => "Gateway Timeout",
+            _ => status.ToString()
+        };
+    }
+
+    private static string BuildHttpFailureMessage(HttpRequestException hre)
+    {
+        var statusCodeProp = hre.StatusCode;
+        if (statusCodeProp.HasValue)
+        {
+            var status = statusCodeProp.Value;
+            var code = (int)status;
+            var reason = DescribeStatus(status);
+            return $"HTTP status {code} ({reason}).";
+        }
+        // No status code (e.g. name resolution failure, no internet) -> show generic guidance and link
+        return BuildGenericFailureMessage();
+    }
+
+    private static string BuildGenericFailureMessage()
+    {
+        return "The request failed due to a connectivity error. Please ensure your internet connection works and that wallhaven.cc is reachable. You can also click the link below to verify wallhaven.cc's API is accessible from your device.";
+    }
+
+    private static string BuildTimeoutMessage(int seconds)
+    {
+        return $"The request timed out after {seconds} seconds. This may indicate a slow or unstable network, or that wallhaven.cc took too long to respond. You can also click the link below to verify wallhaven.cc's API is accessible from your device.";
     }
 }
 
